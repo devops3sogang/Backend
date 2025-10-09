@@ -44,8 +44,8 @@
 
 #### 1. 리포지토리 클론
 ```bash
-git clone [https://github.com/your-username/your-repository-name.git](https://github.com/your-username/your-repository-name.git)
-cd your-repository-name
+git clone https://github.com/devops3sogang/Backend.git
+cd Backend
 ```
 
 #### 2. Python 환경 설정 (크롤러용)
