@@ -66,7 +66,7 @@ pip install -r requirements.txt
 
 ```Properties
 # MongoDB 연결 설정
-spring.data.mongodb.uri=mongodb://localhost:27017/sogang-db
+spring.data.mongodb.uri=mongodb://localhost:27017/campus_food
 
 # JWT 시크릿 키 (반드시 길고 복잡한 랜덤 문자열로 교체)
 jwt.secret=n2r5u8x/A?D(G+KbPeShVmYp3s6v9y$B&E)H@McQfTjWnZq4t7w!z%C*F-JaNdRg
