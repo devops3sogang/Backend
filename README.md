@@ -82,6 +82,22 @@ java -jar build/libs/backend-0.0.1-SNAPSHOT.jar
 
 ---
 
+## 🌐 맛집 목록 확인 - HTML 뷰 (Thymeleaf)
+
+서버 실행 후 브라우저에서 아래 주소로 접속: <br>
+http://localhost:8080/restaurants-view
+
+예시 화면:
+
+|ID|	이름|	타입|	카테고리| 	주소     |
+|:---|:---|:---|:---|:--------|
+|68e785be844b4ecbcd4ec6e6|	거구장|	OFF_CAMPUS|	한식| string  |
+|68e7ada66a3f6293fb9662e6|	서강곱창|	OFF_CAMPUS|	한식| 	string |
+|68e7adac6a3f6293fb9662e7|	핵밥|	OFF_CAMPUS|	한식| 	string |
+|68e7adbe6a3f6293fb9662e8|	서브웨이|	OFF_CAMPUS|	양식| 	string |
+
+---
+
 ## 📖 API 사용법
 애플리케이션 실행 후, 아래 두 가지 방법으로 API를 테스트할 수 있습니다.
 

@@ -40,6 +40,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         // Swagger UI 관련 경로 허용
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-resources/**").permitAll()
+                        // 웹페이지 뷰(View) 경로는 모두 허용
+                        .requestMatchers("/restaurants-view").permitAll()
 
                         // GET 요청에 대한 경로들을 명시적으로 인증만 필요하다고 설정
                         .requestMatchers(HttpMethod.GET, "/api/restaurants/**", "/api/on-campus-menus/**").authenticated()

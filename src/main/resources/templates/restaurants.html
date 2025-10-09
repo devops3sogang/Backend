@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>맛집 목록</title>
+  <style>
+    body { font-family: sans-serif; margin: 2em; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background-color: #f2f2f2; }
+    tr:nth-child(even) { background-color: #f9f9f9; }
+  </style>
+</head>
+<body>
+
+<h1>🎓 맛집 목록</h1>
+
+<table>
+  <thead>
+  <tr>
+    <th>ID</th>
+    <th>이름</th>
+    <th>타입</th>
+    <th>카테고리</th>
+    <th>주소</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr th:each="restaurant : ${restaurants}">
+    <td th:text="${restaurant.id}"></td>
+    <td th:text="${restaurant.name}"></td>
+    <td th:text="${restaurant.type}"></td>
+    <td th:text="${restaurant.category}"></td>
+    <td th:text="${restaurant.address}"></td>
+  </tr>
+  </tbody>
+</table>
+
+</body>
+</html>
