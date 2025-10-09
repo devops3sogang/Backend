@@ -118,11 +118,11 @@ http://localhost:8080/restaurants-view
 |POST| /api/auth/signup                        |	회원가입|	X|
 |POST	| /api/auth/login	                        |로그인 (JWT 토큰 발급)	|X
 |POST	| /api/restaurants	                       |맛집 등록	|O
-|GET	| /api/restaurants	                       |맛집 목록 조회 (필터링 가능)	|O
-|GET	| /api/restaurants/{id}	                  |맛집 상세 정보 조회	|O
+|GET	| /api/restaurants	                       |맛집 목록 조회 (필터링 가능)	|X
+|GET	| /api/restaurants/{id}	                  |맛집 상세 정보 조회	|X
 |POST	| /api/restaurants/{restaurantId}/reviews	|특정 맛집에 리뷰 작성	|O
-|GET	| /api/restaurants/{restaurantId}/reviews	|특정 맛집의 리뷰 목록 조회	|O
+|GET	| /api/restaurants/{restaurantId}/reviews	|특정 맛집의 리뷰 목록 조회	|X
 |POST	|/api/reviews/{reviewId}/like	|리뷰 '좋아요' 토글	|O|
-|GET	| /api/on-campus-menus?date={YYYY-MM-DD}	 |특정 날짜의 교내 식단 조회	|O
+|GET	| /api/on-campus-menus?date={YYYY-MM-DD}	 |특정 날짜의 교내 식단 조회	|X
 
 ___
