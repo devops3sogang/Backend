@@ -36,15 +36,15 @@ public class SecurityConfig {
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
-                        // 인증/인가 API 경로는 모두 허용
+                        // 인증/인가 API 경로 모두 허용
                         .requestMatchers("/api/auth/**").permitAll()
                         // Swagger UI 관련 경로 허용
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-resources/**").permitAll()
-                        // 웹페이지 뷰(View) 경로는 모두 허용
+                        // 웹페이지 뷰(View) 경로 모두 허용
                         .requestMatchers("/restaurants-view").permitAll()
+                        // GET 요청에 대한 경로 모두 허용
+                        .requestMatchers(HttpMethod.GET, "/api/restaurants/**", "/api/on-campus-menus/**").permitAll()
 
-                        // GET 요청에 대한 경로들을 명시적으로 인증만 필요하다고 설정
-                        .requestMatchers(HttpMethod.GET, "/api/restaurants/**", "/api/on-campus-menus/**").authenticated()
                         // POST 요청에 대한 경로들을 명시적으로 인증만 필요하다고 설정
                         .requestMatchers(HttpMethod.POST, "/api/restaurants/**", "/api/reviews/**").authenticated()
 

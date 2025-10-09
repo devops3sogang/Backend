@@ -2,6 +2,7 @@ package com.devops3sogang.backend.controller;
 
 import com.devops3sogang.backend.document.OnCampusMenu;
 import com.devops3sogang.backend.service.OnCampusMenuService;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,7 +27,9 @@ public class OnCampusMenuController {
      * @return 해당 주의 OnCampusMenu Document
      */
     @GetMapping
-    public ResponseEntity<OnCampusMenu> getMenuByDate(@RequestParam("date") String date) {
+    public ResponseEntity<OnCampusMenu> getMenuByDate(
+            @Parameter(description = "조회할 날짜 (YYYY-MM-DD 형식)", required = true, example = "2025-10-06")
+            @RequestParam("date") String date) {
         // 입력받은 날짜를 기준으로 해당 주의 시작일(월요일)을 계산합니다.
         LocalDate requestedDate = LocalDate.parse(date, DateTimeFormatter.ISO_LOCAL_DATE);
         LocalDate weekStartDate = requestedDate.with(DayOfWeek.MONDAY);
