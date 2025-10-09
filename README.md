@@ -1,121 +1,111 @@
-# MongoSpring
+# 🎓 교내식당 & 학교 근처 맛집 리뷰 사이트 (Backend)
 
-Spring Boot + MongoDB 연동 프로젝트입니다.  
-MongoDB의 `campus_food` 데이터베이스를 사용하는 간단한 서버 애플리케이션입니다.
+## 📝 프로젝트 소개
+서강대학교 학생들을 위한 교내 식당 및 학교 주변 맛집 정보/리뷰 웹 서비스의 백엔드 API 서버입니다. 흩어져 있는 맛집 정보를 통합하여 제공하고, 학생들의 솔직한 피드백을 공유하는 플랫폼을 목표로 합니다.
+
+이 프로젝트는 Spring Boot와 MongoDB를 기반으로 구축되었으며, JWT를 이용한 현대적인 인증 방식을 적용했습니다.
+
+--- 
+
+## ✨ 주요 기능
+- 사용자 인증: JWT(JSON Web Token) 기반의 회원가입 및 로그인 API
+
+- 맛집 정보 관리: 교내/외 식당 정보 등록 및 목록/상세 조회
+
+- 리뷰 관리: 특정 맛집에 대한 리뷰 작성 및 조회
+
+- 교내 식당 메뉴: 특정 날짜의 교내 식당 주간 메뉴 조회
+
+- API 문서화: Swagger UI를 통한 API 명세 자동화 및 테스트 환경 제공
 
 ---
 
-## 📁 프로젝트 구조
+## 🛠️ 기술 스택
+- 언어: Java 21
+
+- 프레임워크: Spring Boot 3.x
+
+- 데이터베이스: MongoDB
+
+- 인증: Spring Security, JWT (jjwt 라이브러리)
+
+- 라이브러리:
+
+   - Spring Data MongoDB
+
+   - Lombok
+
+   - Springdoc OpenAPI (Swagger UI)
+
+- 빌드 도구: Gradle
+
+---
+
+## 🚀 시작하기
+### 사전 요구사항
+- Java 21 (JDK)
+
+- Gradle
+
+- MongoDB
+
+### 설치 및 실행
+#### 1. 리포지토리 클론
+```
+Bash
+
+git clone https://github.com/your-username/your-repository-name.git
+cd your-repository-name
+```
+
+#### 2. application.properties 설정
+- src/main/resources/application.properties 파일을 열어 본인의 로컬 MongoDB 환경에 맞게 URI를 설정하고, 안전한 JWT 시크릿 키를 발급받아 입력합니다.
 
 ```
-MongoSpring/
-├── src/
-│   ├── main/
-│   │   ├── java/com/study/MongoSpring/
-│   │   │   ├── MongoSpringApplication.java      # Spring Boot 애플리케이션 진입점 (main 함수)
-│   │   │   │
-│   │   │   ├── controller/
-│   │   │   │   ├── MainRestController.java      # REST API (데이터 조회·추가·삭제) 처리 컨트롤러
-│   │   │   │   └── ViewController.java          # 뷰 전용 컨트롤러 — "/" 요청 시 main.html 반환
-│   │   │   │
-│   │   │   ├── document/
-│   │   │   │   └── Table1Document.java          # MongoDB 컬렉션(table1)의 문서(Document) 모델 클래스
-│   │   │   │
-│   │   │   ├── repository/
-│   │   │   │   └── Table1Repository.java        # MongoRepository 인터페이스를 상속한 기본 Repository 클래스
-│   │   │   │
-│   │   │   └── config/
-│   │   │       └── SwaggerConfig.java           # Swagger(OpenAPI 3) 설정 클래스
-│   │   │
-│   │   └── resources/
-│   │       ├── application.properties           # 서버 포트 및 MongoDB 연결 설정
-│   │       │
-│   │       └── templates/
-│   │           └── main.html                    # Thymeleaf 템플릿 — MongoDB 데이터 목록 출력용 HTML 뷰
-│   │
-│   └── test/                                   # 테스트 코드 디렉터리 (필요 시 단위 테스트 작성)
-│
-├── build.gradle                                # Gradle 기반 빌드 및 의존성 설정 파일
-│
-└── README.txt                                  # 프로젝트 개요, 실행 방법, API 및 Swagger 문서 정보
+Properties
+
+# MongoDB 연결 설정
+spring.data.mongodb.uri=mongodb://localhost:27017/sogang-db
+
+# JWT 시크-릿 키 (반드시 길고 복잡한 랜덤 문자열로 교체)
+jwt.secret=n2r5u8x/A?D(G+KbPeShVmYp3s6v9y$B&E)H@McQfTjWnZq4t7w!z%C*F-JaNdRg
+```
+
+#### 3. 애플리케이션 빌드 및 실행
+```
+Bash
+
+./gradlew build
+java -jar build/libs/backend-0.0.1-SNAPSHOT.jar
+또는 IntelliJ IDEA에서 DevOps3SogangApplication.java 파일을 직접 실행합니다.
 ```
 
 ---
 
-## ⚙️ 환경 설정
+## 📖 API 사용법
+애플리케이션 실행 후, 아래 두 가지 방법으로 API를 테스트할 수 있습니다.
 
-`src/main/resources/application.properties` 파일:
+### 1. Swagger UI
 
-spring.application.name=MongoSpring <br>
-server.port=8080
-spring.data.mongodb.uri=mongodb://localhost:27017/campus_food
+- 브라우저에서 http://localhost:8080/swagger-ui/index.html 로 접속하여 모든 API를 GUI 환경에서 테스트할 수 있습니다.
 
-### # Swagger UI 관련 설정
-springdoc.api-docs.path=/v3/api-docs <br>
-springdoc.swagger-ui.path=/swagger-ui.html
+- 인증이 필요한 API는 Authorize 버튼을 눌러 로그인 후 받은 토큰을 Bearer [토큰] 형식으로 등록해야 합니다.
 
----
+### 2. Postman 등 API 테스트 도구
 
-## 🚀 실행 방법
+- http://localhost:8080을 기본 URL로 하여 아래의 주요 API들을 호출할 수 있습니다.
 
-1. **MongoDB 실행**
-    - 로컬에서 MongoDB가 실행 중이어야 합니다.
-    - 기본 포트는 27017이며, 데이터베이스 이름은 `campus_food`입니다.
+### 주요 API 엔드포인트
 
-2. **서버 실행**
-    - 프로젝트 루트( `build.gradle` 이 있는 위치 )에서 다음 명령어 실행:
+|Method| URL                                     | 설명               |인증 필요|
+|:---|:----------------------------------------|:-----------------|:---|
+|POST| /api/auth/signup                        |	회원가입|	X|
+|POST	| /api/auth/login	                        |로그인 (JWT 토큰 발급)	|X
+|POST	| /api/restaurants	                       |맛집 등록	|O
+|GET	| /api/restaurants	                       |맛집 목록 조회 (필터링 가능)	|O
+|GET	| /api/restaurants/{id}	                  |맛집 상세 정보 조회	|O
+|POST	| /api/restaurants/{restaurantId}/reviews	|특정 맛집에 리뷰 작성	|O
+|GET	| /api/restaurants/{restaurantId}/reviews	|특정 맛집의 리뷰 목록 조회	|O
+|GET	| /api/on-campus-menus?date={YYYY-MM-DD}	 |특정 날짜의 교내 식단 조회	|O
 
-./gradlew bootRun  &nbsp;&nbsp;&nbsp;&nbsp; # macOS / Linux <br>
-gradlew.bat bootRun &nbsp;# Windows
-
-또는 IDE(IntelliJ, VS Code 등)에서  
-`MongoSpringApplication` 클래스를 직접 실행합니다.
-
----
-
-## 🌐 접속 확인 - HTML 뷰 (Thymeleaf)
-
-서버 실행 후 브라우저에서 아래 주소로 접속: <br>
-http://localhost:8080
-
-예시 화면:
-
-|_id|userId|name|
-|:---|:---|:---|
-|68e13075859ab1cce4f88779 | user001 | 홍길동 |
-| 68e13088859ab1cce4f88891 | user002 | 이영희 |
-
-
----
-
-## 📘 Swagger API 문서
-
-Swagger(OpenAPI 3.0) 기반 자동화 API 문서 제공
-
-접속 주소: <br>
-http://localhost:8080/swagger-ui/index.html
-
-설정 파일 위치: <br>
-src/main/java/com/study/MongoSpring/config/SwaggerConfig.java
-
----
-
-## 🧩 개발 환경
-
-- Java 17+
-- Spring Boot 3.5.x
-- MongoDB 7.x
-- Gradle 8.x
-- Swagger UI (springdoc-openapi 2.8.x)
-- Thymeleaf 템플릿 엔진
-
----
-
-## ✅ 실행 후 확인 요약
-
-| 주소                                               |설명|
-|:-------------------------------------------------|:---|
-| http://localhost:8080/              |HTML 뷰 페이지|
-| http://localhost:8080/api/table1                 |전체 데이터 JSON 조회|
-| http://localhost:8080/api/table1/by-user/user001 |단일 데이터(userId) 조회|
-| http://localhost:8080/swagger-ui/index.html      |Swagger 문서 페이지|
+___
