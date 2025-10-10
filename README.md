@@ -114,28 +114,28 @@ http://localhost:8080/restaurants-view
 
 ### 주요 API 엔드포인트
 
-|Method| URL                                  | 설명                 |인증 필요|
-|:---|:-------------------------------------|:-------------------|:---|
+|Method| URL                                   | 설명                 |인증 필요|
+|:---|:--------------------------------------|:-------------------|:---|
 |🔐 인증 (Auth)|
-|POST	| /auth/register	                      | 회원가입	              |X
-|POST	| /auth/login	                         | 로그인 (JWT 토큰 발급)	   |X
-|POST	| /auth/logout	                        | 로그아웃	              |X
+|POST	| /auth/register	                       | 회원가입	              |X
+|POST	| /auth/login	                          | 로그인 (JWT 토큰 발급)	   |X
+|POST	| /auth/logout	                         | 로그아웃	              |X
 |👤 사용자 (Users)|
-|GET	| /users/me	                           | 내 프로필 조회	          |O
-|PUT	| /users/me	                           | 내 프로필 수정	          |O
-|DELETE	| /users/me	                           | 회원 탈퇴	             |O
-|GET	| /users/me/likes	                     | 내가 '좋아요' 누른 리뷰 목록	 |O
+|GET	| /users/me	                            | 내 프로필 조회	          |O
+|PUT	| /users/me	                            | 내 프로필 수정	          |O
+|DELETE	| /users/me	                            | 회원 탈퇴	             |O
+|GET	| /users/me/likes	                      | 내가 '좋아요' 누른 리뷰 목록	 |O
 |🍽️ 맛집 (Restaurants)|
-|POST	| /restaurants	                        | 맛집 등록 (향후 관리자용)	   |O
-|GET	| /restaurants	                        | 맛집 목록 조회 (필터링 가능)	 |X
-|GET	| /restaurants/{id}	                   | 맛집 상세 정보 조회	       |X
+|POST	| /restaurants	                         | 맛집 등록 (향후 관리자용)	   |O
+|GET	| /restaurants	                         | 맛집 목록 조회 (필터링 가능)	 |X
+|GET	| /restaurants/{restaurantId}	          | 맛집 상세 정보 조회	       |X
 |✍️ 리뷰 (Reviews)|
-|POST	| /restaurants/{restaurantId}/reviews	 |특정 맛집에 리뷰 작성	|O
-|GET	| /reviews?restaurantId={id}	          |특정 맛집의 리뷰 목록 조회	|X
-|PUT	| /reviews/{reviewId}	                 |리뷰 수정 (본인만 가능)	|O
-|DELETE	| /reviews/{reviewId}	                 |리뷰 삭제 (본인만 가능)	|O
-|POST	| /reviews/{reviewId}/like	            |리뷰 '좋아요' 토글	|O
+|POST	| /restaurants/{restaurantId}/reviews	  |특정 맛집에 리뷰 작성	|O
+|GET	| /reviews?restaurantId={restaurantId}	 |특정 맛집의 리뷰 목록 조회	|X
+|PUT	| /reviews/{reviewId}	                  |리뷰 수정 (본인만 가능)	|O
+|DELETE	| /reviews/{reviewId}	                  |리뷰 삭제 (본인만 가능)	|O
+|POST	| /reviews/{reviewId}/like	             |리뷰 '좋아요' 토글	|O
 |🏫 교내식당 (On-Campus Menus)|
-|GET	| /on-campus-menus?date={YYYY-MM-DD}	  | 특정 날짜의 교내 식단 조회	   |X
+|GET	| /on-campus-menus?date={YYYY-MM-DD}	   | 특정 날짜의 교내 식단 조회	   |X
 
 ___

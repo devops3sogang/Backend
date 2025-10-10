@@ -21,7 +21,7 @@ public class ReviewController {
 
     /**
      * 특정 맛집의 모든 리뷰 조회
-     * GET /reviews?restaurantId={id}
+     * GET /reviews?restaurantId={restaurantId}
      */
     @GetMapping
     public ResponseEntity<List<Review>> getReviewsByRestaurant(@RequestParam("restaurantId") String restaurantId) {
