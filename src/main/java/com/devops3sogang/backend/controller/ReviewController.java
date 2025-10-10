@@ -4,6 +4,7 @@ import com.devops3sogang.backend.document.Review;
 import com.devops3sogang.backend.dto.ReviewRequest;
 import com.devops3sogang.backend.dto.ReviewUpdateRequest;
 import com.devops3sogang.backend.service.ReviewService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -34,6 +35,7 @@ public class ReviewController {
      * PUT /reviews/{reviewId}
      */
     @PutMapping("/{reviewId}")
+    @SecurityRequirement(name = "Bearer Authentication")
     public ResponseEntity<Review> updateReview(
             @PathVariable("reviewId") String reviewId,
             @Valid @RequestBody ReviewUpdateRequest request,
@@ -48,6 +50,7 @@ public class ReviewController {
      * DELETE /review/{reviewId}
      */
     @DeleteMapping("/{reviewId}")
+    @SecurityRequirement(name = "Bearer Authentication")
     public ResponseEntity<Void> deleteReview(
             @PathVariable("reviewId") String reviewId,
             Authentication authentication) {

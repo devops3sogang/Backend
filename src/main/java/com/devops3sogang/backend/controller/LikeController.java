@@ -2,6 +2,7 @@ package com.devops3sogang.backend.controller;
 
 import com.devops3sogang.backend.document.User;
 import com.devops3sogang.backend.service.LikeService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -22,6 +23,7 @@ public class LikeController {
      * POST /reviews/{reviewId}/like
      */
     @PostMapping("/{reviewId}/like")
+    @SecurityRequirement(name = "Bearer Authentication")
     public ResponseEntity<Void> toggleLike(@PathVariable("reviewId") String reviewId, Authentication authentication) {
         // 인증된 사용자 정보에서 UserDetails를 가져옴
         User userDetails = (User) authentication.getPrincipal();

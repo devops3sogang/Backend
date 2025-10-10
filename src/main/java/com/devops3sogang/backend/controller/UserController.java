@@ -4,6 +4,7 @@ import com.devops3sogang.backend.document.Review;
 import com.devops3sogang.backend.dto.UserProfileResponse;
 import com.devops3sogang.backend.dto.UserUpdateRequest;
 import com.devops3sogang.backend.service.UserService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
+@SecurityRequirement(name = "Bearer Authentication")
 public class UserController {
 
     private final UserService userService;

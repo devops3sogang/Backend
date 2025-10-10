@@ -24,10 +24,7 @@ public class SwaggerConfig {
                 .scheme("bearer") // 스킴: Bearer
                 .bearerFormat("JWT"); // 베어러 포맷: JWT
 
-        // 2. SecurityRequirement 정의: 위에서 정의한 SecurityScheme을 전역적으로 적용합니다.
-        SecurityRequirement securityRequirement = new SecurityRequirement().addList(securitySchemeName);
-
-        // 3. OpenAPI 객체에 반영
+        // 2. OpenAPI 객체에 반영
         return new OpenAPI()
                 .info(new Info()
                         .title("MongoSpring REST API")
@@ -37,8 +34,6 @@ public class SwaggerConfig {
                         new Server().url("http://localhost:8080").description("로컬 서버")
                 ))
                 // Components에 SecurityScheme 추가
-                .components(new Components().addSecuritySchemes(securitySchemeName, securityScheme))
-                // SecurityRequirement에 전역 설정 추가
-                .addSecurityItem(securityRequirement);
+                .components(new Components().addSecuritySchemes(securitySchemeName, securityScheme));
     }
 }

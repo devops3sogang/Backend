@@ -6,6 +6,7 @@ import com.devops3sogang.backend.dto.RestaurantRequest;
 import com.devops3sogang.backend.dto.ReviewRequest;
 import com.devops3sogang.backend.service.RestaurantService;
 import com.devops3sogang.backend.service.ReviewService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -49,6 +50,7 @@ public class RestaurantController {
      * POST /restaurants
      */
     @PostMapping
+    @SecurityRequirement(name = "Bearer Authentication")
     public ResponseEntity<Restaurant> createRestaurant(@RequestBody RestaurantRequest request) {
         Restaurant newRestaurant = restaurantService.create(request);
         return ResponseEntity.status(201).body(newRestaurant); // 201 Created
@@ -59,6 +61,7 @@ public class RestaurantController {
      * POST /restaurants/{restaurantId}/reviews
      */
     @PostMapping("/{restaurantId}/reviews")
+    @SecurityRequirement(name = "Bearer Authentication")
     public ResponseEntity<Review> createReview(
             @PathVariable("restaurantId") String restaurantId,
             @Valid @RequestBody ReviewRequest request,
