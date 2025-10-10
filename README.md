@@ -8,6 +8,7 @@
 ## ✨ 주요 기능
 
 - **사용자 인증**: JWT(JSON Web Token) 기반의 회원가입 및 로그인
+- **사용자 프로필 관리**: 로그인한 사용자의 프로필 조회, 수정(닉네임/비밀번호), 회원 탈퇴
 - **맛집 정보 관리**: 교내/외 식당 정보 등록 및 목록/상세 조회
 - **리뷰 관리**: 특정 맛집에 대한 리뷰 작성, 조회 및 **좋아요(Like)** 기능
 - **교내 식당 메뉴**: 특정 날짜의 교내 식당 주간 메뉴 조회
@@ -91,10 +92,10 @@ http://localhost:8080/restaurants-view
 
 |ID|	이름|	타입|	카테고리| 	주소     |
 |:---|:---|:---|:---|:--------|
-|68e785be844b4ecbcd4ec6e6|	거구장|	OFF_CAMPUS|	한식| string  |
-|68e7ada66a3f6293fb9662e6|	서강곱창|	OFF_CAMPUS|	한식| 	string |
-|68e7adac6a3f6293fb9662e7|	핵밥|	OFF_CAMPUS|	한식| 	string |
-|68e7adbe6a3f6293fb9662e8|	서브웨이|	OFF_CAMPUS|	양식| 	string |
+|68e785be844b4ecbcd4ec6e6|	거구장|	OFF_CAMPUS|	한식| 서울특별시 마포구 백범로 17  |
+|68e7ada66a3f6293fb9662e6|	서강곱창|	OFF_CAMPUS|	한식| 	서울특별시 마포구 신수동 93-2 |
+|68e7adac6a3f6293fb9662e7|	핵밥|	OFF_CAMPUS|	한식| 	서울특별시 마포구 백범로 28 |
+|68e7adbe6a3f6293fb9662e8|	서브웨이|	OFF_CAMPUS|	양식| 	서울특별시 마포구 서강로16길 48 |
 
 ---
 
@@ -117,6 +118,10 @@ http://localhost:8080/restaurants-view
 |:---|:----------------------------------------|:-----------------|:---|
 |POST| /api/auth/signup                        |	회원가입|	X|
 |POST	| /api/auth/login	                        |로그인 (JWT 토큰 발급)	|X
+|GET	|/api/users/me	|내 프로필 조회	|O
+|PUT	|/api/users/me	|내 프로필 수정	|O
+|DELETE	|/api/users/me	|회원 탈퇴	|O
+|GET	|/api/users/me/likes	|내가 '좋아요' 누른 리뷰 목록	|O
 |POST	| /api/restaurants	                       |맛집 등록	|O
 |GET	| /api/restaurants	                       |맛집 목록 조회 (필터링 가능)	|X
 |GET	| /api/restaurants/{id}	                  |맛집 상세 정보 조회	|X
