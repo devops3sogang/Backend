@@ -1,5 +1,6 @@
 package com.devops3sogang.backend.controller;
 
+import com.devops3sogang.backend.document.Review;
 import com.devops3sogang.backend.dto.UserResponse;
 import com.devops3sogang.backend.dto.UserUpdateRequest;
 import com.devops3sogang.backend.service.UserService;
@@ -8,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")
@@ -44,5 +47,15 @@ public class UserController {
         String userEmail = authentication.getName();
         userService.deleteUser(userEmail);
         return ResponseEntity.ok().build();
+    }
+
+    /**
+     * 현재 로그인한 사용자가 '좋아요'를 누른 모든 리뷰 목록을 조회합니다.
+     */
+    @GetMapping("/me/likes")
+    public ResponseEntity<List<Review>> getMyLikedReviews(Authentication authentication) {
+        String userEmail = authentication.getName();
+        List<Review> likedReviews = userService.getLikedReviews(userEmail);
+        return ResponseEntity.ok(likedReviews);
     }
 }
