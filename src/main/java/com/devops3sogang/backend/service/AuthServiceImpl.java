@@ -3,7 +3,7 @@ package com.devops3sogang.backend.service;
 import com.devops3sogang.backend.config.jwt.JwtUtil;
 import com.devops3sogang.backend.document.User;
 import com.devops3sogang.backend.dto.LoginRequest;
-import com.devops3sogang.backend.dto.SignUpRequest;
+import com.devops3sogang.backend.dto.RegisterRequest;
 import com.devops3sogang.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,7 +18,7 @@ public class AuthServiceImpl implements AuthService {
     private final JwtUtil jwtUtil; // JWT 토큰 생성을 위한 유틸리티 클래스
 
     @Override
-    public User signup(SignUpRequest request) {
+    public User register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("이미 가입된 이메일입니다.");
         }

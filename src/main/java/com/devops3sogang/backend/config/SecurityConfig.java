@@ -45,7 +45,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/restaurants").hasRole("ADMIN")
 
                         // --- 인증 필요 경로 ---
-                        .requestMatchers("/users/me/**").authenticated()
+                        .requestMatchers("/users/me").authenticated()
                         // 리뷰 작성은 인증된 사용자 누구나 가능
                         .requestMatchers(HttpMethod.POST, "/restaurants/**/reviews").authenticated()
 

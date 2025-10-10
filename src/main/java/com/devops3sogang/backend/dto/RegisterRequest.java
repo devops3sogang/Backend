@@ -6,7 +6,7 @@ import jakarta.validation.constraints.*; // Spring Boot 3.x
 
 @Data
 @Schema(description = "회원가입 요청 DTO") // 클래스 자체에 대한 설명
-public class SignUpRequest {
+public class RegisterRequest {
 
     @Schema(description = "사용자 이메일", example = "testuser1@sogang.ac.kr")
     @NotBlank(message = "이메일은 필수 입력 값입니다.")

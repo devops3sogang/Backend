@@ -126,7 +126,7 @@ http://localhost:8080/restaurants-view
 |:---|:--------------------------------------|:-----------------------|:---|
 |GET	| /users/me	                            | 내 프로필 조회 (리뷰, 좋아요 포함)	 |O
 |PUT	| /users/me	                            | 내 프로필 수정	              |O
-|DELETE	| /users/me	                            | 회원 탈퇴	                 |O
+|DELETE	| /users/me	                            | 유저 데이터 삭제	             |O
 
 ### 🍽️ 맛집 (Restaurants)
 |Method| URL                                   | 설명                 |인증 필요|

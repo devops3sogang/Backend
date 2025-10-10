@@ -1,8 +1,9 @@
 package com.devops3sogang.backend.controller;
 
 import com.devops3sogang.backend.dto.LoginRequest;
-import com.devops3sogang.backend.dto.SignUpRequest;
+import com.devops3sogang.backend.dto.RegisterRequest;
 import com.devops3sogang.backend.service.AuthService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,8 +20,8 @@ public class AuthController {
      * POST /auth/register
      */
     @PostMapping("/register")
-    public ResponseEntity<String> signup(@RequestBody SignUpRequest request) {
-        authService.signup(request);
+    public ResponseEntity<String> register(@Valid @RequestBody RegisterRequest request) {
+        authService.register(request);
         return ResponseEntity.status(201).body("회원가입이 완료되었습니다.");
     }
 
@@ -29,7 +30,7 @@ public class AuthController {
      * POST /auth/login
      */
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<String> login(@Valid @RequestBody LoginRequest request) {
         String jwtToken = authService.login(request);
         // 실제로는 토큰을 Body에 담아 보냅니다.
         return ResponseEntity.ok(jwtToken);
