@@ -128,10 +128,15 @@ http://localhost:8080/restaurants-view
 |PUT	| /users/me	                            | 내 프로필 수정	              |O
 |DELETE	| /users/me	                            | 유저 데이터 삭제	             |O
 
+### 👑 관리자 (Admin)
+|Method| URL                                   | 설명                     |인증 필요|
+|:---|:--------------------------------------|:-----------------------|:---|
+|DELETE	|/admin/restaurants/{restaurantId}	|맛집 삭제 (관련 리뷰/좋아요 포함)	|O (ADMIN)
+
 ### 🍽️ 맛집 (Restaurants)
 |Method| URL                                   | 설명                 |인증 필요|
 |:---|:--------------------------------------|:-------------------|:---|
-|POST	| /restaurants	                         | 맛집 등록 (관리자만 가능)	   |O
+|POST	| /restaurants	                         | 맛집 등록 (관리자만 가능)	   |O (ADMIN)
 |GET	| /restaurants	                         | 맛집 목록 조회 (필터링 가능)	 |X
 |GET	| /restaurants/{restaurantId}	          | 맛집 상세 정보 조회	       |X
 
