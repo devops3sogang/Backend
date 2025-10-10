@@ -8,7 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
@@ -16,9 +16,9 @@ public class AuthController {
 
     /**
      * 회원가입
-     * POST /api/auth/signup
+     * POST /auth/register
      */
-    @PostMapping("/signup")
+    @PostMapping("/register")
     public ResponseEntity<String> signup(@RequestBody SignUpRequest request) {
         authService.signup(request);
         return ResponseEntity.status(201).body("회원가입이 완료되었습니다.");
@@ -26,12 +26,23 @@ public class AuthController {
 
     /**
      * 로그인
-     * POST /api/auth/login
+     * POST /auth/login
      */
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody LoginRequest request) {
         String jwtToken = authService.login(request);
         // 실제로는 토큰을 Body에 담아 보냅니다.
         return ResponseEntity.ok(jwtToken);
+    }
+
+    /**
+     * 로그아웃
+     * POST /auth/logout
+     */
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout() {
+        // JWT 기반에서는 클라이언트 측에서 토큰을 삭제하는 것이 일반적입니다.
+        // 서버에서는 특별히 할 일이 없거나, 토큰을 블랙리스트에 추가하는 로직을 구현할 수 있습니다.
+        return ResponseEntity.ok("로그아웃 되었습니다.");
     }
 }

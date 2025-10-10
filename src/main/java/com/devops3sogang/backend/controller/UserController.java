@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/users")
 @RequiredArgsConstructor
 public class UserController {
 
@@ -21,6 +21,7 @@ public class UserController {
 
     /**
      * 현재 로그인한 사용자의 프로필 정보를 조회합니다.
+     * GET /users/me
      */
     @GetMapping("/me")
     public ResponseEntity<UserResponse> getMyProfile(Authentication authentication) {
@@ -31,6 +32,7 @@ public class UserController {
 
     /**
      * 현재 로그인한 사용자의 프로필 정보를 수정합니다.
+     * PUT /users/me
      */
     @PutMapping("/me")
     public ResponseEntity<Void> updateMyProfile(Authentication authentication, @Valid @RequestBody UserUpdateRequest request) {
@@ -41,6 +43,7 @@ public class UserController {
 
     /**
      * 현재 로그인한 사용자를 탈퇴 처리합니다.
+     * DELETE /users/me
      */
     @DeleteMapping("/me")
     public ResponseEntity<Void> deleteMyAccount(Authentication authentication) {
@@ -51,6 +54,7 @@ public class UserController {
 
     /**
      * 현재 로그인한 사용자가 '좋아요'를 누른 모든 리뷰 목록을 조회합니다.
+     * GET /users/me/likes
      */
     @GetMapping("/me/likes")
     public ResponseEntity<List<Review>> getMyLikedReviews(Authentication authentication) {

@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/reviews")
+@RequestMapping("/reviews")
 @RequiredArgsConstructor
 public class LikeController {
 
@@ -19,6 +19,7 @@ public class LikeController {
 
     /**
      * 특정 리뷰에 대한 '좋아요'를 토글(추가/취소)합니다.
+     * POST /reviews/{reviewId}/like
      */
     @PostMapping("/{reviewId}/like")
     public ResponseEntity<Void> toggleLike(@PathVariable("reviewId") String reviewId, Authentication authentication) {

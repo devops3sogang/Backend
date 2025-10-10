@@ -2,7 +2,9 @@ package com.devops3sogang.backend.controller;
 
 import com.devops3sogang.backend.document.Review;
 import com.devops3sogang.backend.dto.ReviewRequest;
+import com.devops3sogang.backend.dto.ReviewUpdateRequest;
 import com.devops3sogang.backend.service.ReviewService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -11,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/reviews")
 @RequiredArgsConstructor
 public class ReviewController {
 
@@ -19,29 +21,38 @@ public class ReviewController {
 
     /**
      * 특정 맛집의 모든 리뷰 조회
-     * GET /api/restaurants/{restaurantId}/reviews
+     * GET /reviews?restaurantId={id}
      */
-    @GetMapping("/restaurants/{restaurantId}/reviews")
-    public ResponseEntity<List<Review>> getReviewsByRestaurant(@PathVariable("restaurantId") String restaurantId) {
+    @GetMapping
+    public ResponseEntity<List<Review>> getReviewsByRestaurant(@RequestParam("restaurantId") String restaurantId) {
         List<Review> reviews = reviewService.findReviewsByRestaurantId(restaurantId);
         return ResponseEntity.ok(reviews);
     }
 
     /**
-     * 특정 맛집에 리뷰 작성
-     * POST /api/restaurants/{restaurantId}/reviews
+     * 리뷰 수정
+     * PUT /reviews/{reviewId}
      */
-    @PostMapping("/restaurants/{restaurantId}/reviews")
-    public ResponseEntity<Review> createReview(
-            @PathVariable("restaurantId") String restaurantId,
-            @RequestBody ReviewRequest request,
-            Authentication authentication) { // 👈 Authentication 객체를 파라미터로 추가
-
-        // Authentication 객체에서 사용자의 email(우리의 username)을 가져옵니다.
+    @PutMapping("/{reviewId}")
+    public ResponseEntity<Review> updateReview(
+            @PathVariable("reviewId") String reviewId,
+            @Valid @RequestBody ReviewUpdateRequest request,
+            Authentication authentication) {
         String userEmail = authentication.getName();
+        Review updatedReview = reviewService.updateReview(reviewId, request, userEmail);
+        return ResponseEntity.ok(updatedReview);
+    }
 
-        // 이제 email을 사용하여 리뷰를 생성합니다. (Service 계층도 약간 수정이 필요합니다)
-        Review newReview = reviewService.createReview(userEmail, restaurantId, request);
-        return ResponseEntity.status(201).body(newReview);
+    /**
+     * 리뷰 삭제
+     * DELETE /review/{reviewId}
+     */
+    @DeleteMapping("/{reviewId}")
+    public ResponseEntity<Void> deleteReview(
+            @PathVariable("reviewId") String reviewId,
+            Authentication authentication) {
+        String userEmail = authentication.getName();
+        reviewService.deleteReview(reviewId, userEmail);
+        return ResponseEntity.ok().build();
     }
 }

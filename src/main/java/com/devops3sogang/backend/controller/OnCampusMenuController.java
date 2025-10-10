@@ -15,7 +15,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 @RestController
-@RequestMapping("/api/on-campus-menus")
+@RequestMapping("/on-campus-menus")
 @RequiredArgsConstructor
 public class OnCampusMenuController {
 
@@ -23,6 +23,7 @@ public class OnCampusMenuController {
 
     /**
      * 특정 날짜가 포함된 주(Week)의 교내 식당 메뉴를 조회합니다.
+     * GET /on-campus-menus?date={YYYY-MM-DD}
      * @param date 조회할 날짜 (YYYY-MM-DD 형식)
      * @return 해당 주의 OnCampusMenu Document
      */

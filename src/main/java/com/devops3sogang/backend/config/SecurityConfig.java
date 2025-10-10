@@ -37,18 +37,22 @@ public class SecurityConfig {
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
                         // 인증/인가 API 경로 모두 허용
-                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/auth/**").permitAll()
                         // Swagger UI 관련 경로 허용
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-resources/**").permitAll()
                         // 웹페이지 뷰(View) 경로 모두 허용
                         .requestMatchers("/restaurants-view").permitAll()
                         // GET 요청에 대한 경로 모두 허용
-                        .requestMatchers(HttpMethod.GET, "/api/restaurants/**", "/api/on-campus-menus/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/restaurants/**", "/reviews/**", "/on-campus-menus/**").permitAll()
 
-                        // POST 요청에 대한 경로들을 명시적으로 인증만 필요하다고 설정
-                        .requestMatchers(HttpMethod.POST, "/api/restaurants/**", "/api/reviews/**").authenticated()
                         // User CRUD 요청에 대한 경로들을 명시적으로 인증만 필요하다고 설정
-                        .requestMatchers("/api/users/**").authenticated()
+                        .requestMatchers("/users/me/**").authenticated()
+                        // POST 요청에 대한 경로들을 명시적으로 인증만 필요하다고 설정
+                        .requestMatchers(HttpMethod.POST, "/restaurants/**", "/reviews/**").authenticated()
+                        // PUT 요청에 대한 경로들을 명시적으로 인증만 필요하다고 설정
+                        .requestMatchers(HttpMethod.PUT, "/reviews/**").authenticated()
+                        // DELETE 요청에 대한 경로들을 명시적으로 인증만 필요하다고 설정
+                        .requestMatchers(HttpMethod.DELETE, "/reviews/**").authenticated()
 
                         // 위에서 지정하지 않은 그 외 모든 요청은 일단 거부 (더 안전한 방식)
                         .anyRequest().denyAll()
