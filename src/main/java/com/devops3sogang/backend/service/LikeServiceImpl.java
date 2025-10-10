@@ -12,8 +12,6 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
-
 @Service
 @RequiredArgsConstructor
 public class LikeServiceImpl implements LikeService {
@@ -25,23 +23,26 @@ public class LikeServiceImpl implements LikeService {
     @Override
     @Transactional
     public boolean toggleLike(String userId, String reviewId) {
-        // 리뷰가 존재하는지 먼저 확인
         reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new RuntimeException("리뷰를 찾을 수 없습니다."));
 
-        Optional<Like> likeOptional = likeRepository.findByUserIdAndReviewId(userId, reviewId);
+        // 1. MongoTemplate으로 직접 쿼리를 만들어 '좋아요'가 있는지 확인합니다.
+        Query query = new Query(Criteria.where("userId").is(userId).and("reviewId").is(reviewId));
+        Like existingLike = mongoTemplate.findOne(query, Like.class);
 
-        if (likeOptional.isPresent()) {
+        if (existingLike != null) {
             // --- 좋아요가 이미 존재할 경우: 좋아요 취소 ---
-            likeRepository.delete(likeOptional.get());
+            // 2. MongoTemplate으로 직접 '좋아요' 데이터를 삭제합니다.
+            mongoTemplate.remove(existingLike);
             updateLikeCount(reviewId, -1); // likeCount 1 감소
-            return false; // '좋아요' 상태 아님
+            return false;
         } else {
             // --- 좋아요가 없을 경우: 좋아요 추가 ---
+            // 3. '좋아요' 데이터를 생성하고 저장합니다. (이 부분은 Repository를 사용해도 안전합니다.)
             Like newLike = new Like(userId, reviewId);
             likeRepository.save(newLike);
             updateLikeCount(reviewId, 1); // likeCount 1 증가
-            return true; // '좋아요' 상태임
+            return true;
         }
     }
 

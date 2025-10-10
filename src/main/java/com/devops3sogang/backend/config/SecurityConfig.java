@@ -47,6 +47,8 @@ public class SecurityConfig {
 
                         // POST 요청에 대한 경로들을 명시적으로 인증만 필요하다고 설정
                         .requestMatchers(HttpMethod.POST, "/api/restaurants/**", "/api/reviews/**").authenticated()
+                        // User CRUD 요청에 대한 경로들을 명시적으로 인증만 필요하다고 설정
+                        .requestMatchers("/api/users/me").authenticated()
 
                         // 위에서 지정하지 않은 그 외 모든 요청은 일단 거부 (더 안전한 방식)
                         .anyRequest().denyAll()
