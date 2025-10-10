@@ -3,7 +3,7 @@ package com.devops3sogang.backend.service;
 import com.devops3sogang.backend.document.Like;
 import com.devops3sogang.backend.document.Review;
 import com.devops3sogang.backend.document.User;
-import com.devops3sogang.backend.dto.UserResponse;
+import com.devops3sogang.backend.dto.UserProfileResponse;
 import com.devops3sogang.backend.dto.UserUpdateRequest;
 import com.devops3sogang.backend.repository.LikeRepository;
 import com.devops3sogang.backend.repository.ReviewRepository;
@@ -28,10 +28,27 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
 
     @Override
-    public UserResponse getUserProfile(String email) {
+    public UserProfileResponse getComprehensiveUserProfile(String email) {
+        // 1. 사용자 정보를 찾습니다.
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-        return UserResponse.from(user);
+
+        // 2. 사용자가 작성한 리뷰 목록을 찾습니다.
+        List<Review> writtenReviews = reviewRepository.findByUserId(user.getId());
+
+        // 3. 사용자가 '좋아요'를 누른 리뷰 목록을 찾습니다. (기존 getLikedReviews 로직)
+        List<Like> userLikes = likeRepository.findByUserId(user.getId());
+        List<String> likedReviewIds = userLikes.stream()
+                .map(Like::getReviewId)
+                .collect(Collectors.toList());
+
+        List<Review> likedReviews = new ArrayList<>();
+        if (!likedReviewIds.isEmpty()) {
+            likedReviews = reviewRepository.findAllById(likedReviewIds);
+        }
+
+        // 4. 모든 정보를 UserProfileResponse DTO에 담아 반환합니다.
+        return UserProfileResponse.from(user, writtenReviews, likedReviews);
     }
 
     @Override
@@ -88,26 +105,5 @@ public class UserServiceImpl implements UserService {
 
         // 3. 마지막으로 사용자 정보를 삭제합니다.
         userRepository.delete(user);
-    }
-
-    @Override
-    public List<Review> getLikedReviews(String email) {
-        // 1. 이메일로 사용자 정보를 찾습니다.
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-
-        // 2. 사용자의 ID로 모든 '좋아요' 기록을 찾습니다.
-        List<Like> userLikes = likeRepository.findByUserId(user.getId());
-
-        // 3. '좋아요' 기록에서 reviewId만 추출하여 리스트로 만듭니다.
-        List<String> likedReviewIds = userLikes.stream()
-                .map(Like::getReviewId)
-                .collect(Collectors.toList());
-
-        // 4. reviewId 리스트를 사용해 모든 관련 리뷰를 한 번에 조회하여 반환합니다.
-        if (likedReviewIds.isEmpty()) {
-            return new ArrayList<>(); // 좋아요 누른 리뷰가 없으면 빈 리스트 반환
-        }
-        return reviewRepository.findAllById(likedReviewIds);
     }
 }

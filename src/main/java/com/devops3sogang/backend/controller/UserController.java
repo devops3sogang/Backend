@@ -1,7 +1,7 @@
 package com.devops3sogang.backend.controller;
 
 import com.devops3sogang.backend.document.Review;
-import com.devops3sogang.backend.dto.UserResponse;
+import com.devops3sogang.backend.dto.UserProfileResponse;
 import com.devops3sogang.backend.dto.UserUpdateRequest;
 import com.devops3sogang.backend.service.UserService;
 import jakarta.validation.Valid;
@@ -20,13 +20,14 @@ public class UserController {
     private final UserService userService;
 
     /**
-     * 현재 로그인한 사용자의 프로필 정보를 조회합니다.
+     * 현재 로그인한 사용자의 통합 프로필 정보를 조회합니다.
+     * (프로필, 작성 리뷰, 좋아요한 리뷰 포함)
      * GET /users/me
      */
     @GetMapping("/me")
-    public ResponseEntity<UserResponse> getMyProfile(Authentication authentication) {
+    public ResponseEntity<UserProfileResponse> getMyProfile(Authentication authentication) {
         String userEmail = authentication.getName();
-        UserResponse userProfile = userService.getUserProfile(userEmail);
+        UserProfileResponse userProfile = userService.getComprehensiveUserProfile(userEmail);
         return ResponseEntity.ok(userProfile);
     }
 
@@ -50,16 +51,5 @@ public class UserController {
         String userEmail = authentication.getName();
         userService.deleteUser(userEmail);
         return ResponseEntity.ok().build();
-    }
-
-    /**
-     * 현재 로그인한 사용자가 '좋아요'를 누른 모든 리뷰 목록을 조회합니다.
-     * GET /users/me/likes
-     */
-    @GetMapping("/me/likes")
-    public ResponseEntity<List<Review>> getMyLikedReviews(Authentication authentication) {
-        String userEmail = authentication.getName();
-        List<Review> likedReviews = userService.getLikedReviews(userEmail);
-        return ResponseEntity.ok(likedReviews);
     }
 }
