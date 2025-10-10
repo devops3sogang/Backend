@@ -82,8 +82,8 @@ public class ReviewServiceImpl implements ReviewService {
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new RuntimeException("리뷰를 찾을 수 없습니다."));
 
-        // 리뷰 작성자와 삭제 요청자가 동일인인지 확인
-        if (!review.getUserId().equals(user.getId())) {
+        // 리뷰 작성자도 아니고, 관리자도 아닐 경우에만 에러 발생
+        if (!review.getUserId().equals(user.getId()) && !user.getRole().equals("ADMIN")) {
             throw new RuntimeException("리뷰를 삭제할 권한이 없습니다.");
         }
 

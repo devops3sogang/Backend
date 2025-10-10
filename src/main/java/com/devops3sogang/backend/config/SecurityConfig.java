@@ -36,26 +36,22 @@ public class SecurityConfig {
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
-                        // 인증/인가 API 경로 모두 허용
-                        .requestMatchers("/auth/**").permitAll()
-                        // Swagger UI 관련 경로 허용
+                        // --- 인증 불필요 경로 ---
+                        .requestMatchers("/auth/**", "/restaurants-view").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-resources/**").permitAll()
-                        // 웹페이지 뷰(View) 경로 모두 허용
-                        .requestMatchers("/restaurants-view").permitAll()
-                        // GET 요청에 대한 경로 모두 허용
-                        .requestMatchers(HttpMethod.GET, "/restaurants/**", "/reviews/**", "/on-campus-menus/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/restaurants/**", "/reviews", "/on-campus-menus/**").permitAll()
 
-                        // User CRUD 요청에 대한 경로들을 명시적으로 인증만 필요하다고 설정
+                        // 맛집 등록은 'ADMIN' 역할만 가능
+                        .requestMatchers(HttpMethod.POST, "/restaurants").hasRole("ADMIN")
+
+                        // --- 인증 필요 경로 ---
                         .requestMatchers("/users/me/**").authenticated()
-                        // POST 요청에 대한 경로들을 명시적으로 인증만 필요하다고 설정
-                        .requestMatchers(HttpMethod.POST, "/restaurants/**", "/reviews/**").authenticated()
-                        // PUT 요청에 대한 경로들을 명시적으로 인증만 필요하다고 설정
-                        .requestMatchers(HttpMethod.PUT, "/reviews/**").authenticated()
-                        // DELETE 요청에 대한 경로들을 명시적으로 인증만 필요하다고 설정
-                        .requestMatchers(HttpMethod.DELETE, "/reviews/**").authenticated()
+                        // 리뷰 작성은 인증된 사용자 누구나 가능
+                        .requestMatchers(HttpMethod.POST, "/restaurants/**/reviews").authenticated()
 
-                        // 위에서 지정하지 않은 그 외 모든 요청은 일단 거부 (더 안전한 방식)
-                        .anyRequest().denyAll()
+                        .requestMatchers(HttpMethod.PUT, "/reviews/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/reviews/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/reviews/**/like").authenticated()
                 )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)

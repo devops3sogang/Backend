@@ -131,18 +131,18 @@ http://localhost:8080/restaurants-view
 ### 🍽️ 맛집 (Restaurants)
 |Method| URL                                   | 설명                 |인증 필요|
 |:---|:--------------------------------------|:-------------------|:---|
-|POST	| /restaurants	                         | 맛집 등록 (향후 관리자용)	   |O
+|POST	| /restaurants	                         | 맛집 등록 (관리자만 가능)	   |O
 |GET	| /restaurants	                         | 맛집 목록 조회 (필터링 가능)	 |X
 |GET	| /restaurants/{restaurantId}	          | 맛집 상세 정보 조회	       |X
 
 ### ✍️ 리뷰 (Reviews)
-|Method| URL                                   | 설명                 |인증 필요|
-|:---|:--------------------------------------|:-------------------|:---|
-|POST	| /restaurants/{restaurantId}/reviews	  |특정 맛집에 리뷰 작성	|O
-|GET	| /reviews?restaurantId={restaurantId}	 |특정 맛집의 리뷰 목록 조회	|X
-|PUT	| /reviews/{reviewId}	                  |리뷰 수정 (본인만 가능)	|O
-|DELETE	| /reviews/{reviewId}	                  |리뷰 삭제 (본인만 가능)	|O
-|POST	| /reviews/{reviewId}/like	             |리뷰 '좋아요' 토글	|O
+|Method| URL                                   | 설명                  |인증 필요|
+|:---|:--------------------------------------|:--------------------|:---|
+|POST	| /restaurants/{restaurantId}/reviews	  | 특정 맛집에 리뷰 작성	       |O
+|GET	| /reviews?restaurantId={restaurantId}	 | 특정 맛집의 리뷰 목록 조회	    |X
+|PUT	| /reviews/{reviewId}	                  | 리뷰 수정 (본인만 가능)	     |O
+|DELETE	| /reviews/{reviewId}	                  | 리뷰 삭제 (본인/관리자만 가능)	 |O
+|POST	| /reviews/{reviewId}/like	             | 리뷰 '좋아요' 토글	        |O
 
 ### 🏫 교내식당 (On-Campus Menus)
 |Method| URL                                   | 설명                 |인증 필요|
