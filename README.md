@@ -122,12 +122,11 @@ http://localhost:8080/restaurants-view
 |POST	| /auth/logout	                         | 로그아웃	              |X
 
 ### 👤 사용자 (Users)
-|Method| URL                                   | 설명                 |인증 필요|
-|:---|:--------------------------------------|:-------------------|:---|
-|GET	| /users/me	                            | 내 프로필 조회	          |O
-|PUT	| /users/me	                            | 내 프로필 수정	          |O
-|DELETE	| /users/me	                            | 회원 탈퇴	             |O
-|GET	| /users/me/likes	                      | 내가 '좋아요' 누른 리뷰 목록	 |O
+|Method| URL                                   | 설명                     |인증 필요|
+|:---|:--------------------------------------|:-----------------------|:---|
+|GET	| /users/me	                            | 내 프로필 조회 (리뷰, 좋아요 포함)	 |O
+|PUT	| /users/me	                            | 내 프로필 수정	              |O
+|DELETE	| /users/me	                            | 회원 탈퇴	                 |O
 
 ### 🍽️ 맛집 (Restaurants)
 |Method| URL                                   | 설명                 |인증 필요|
