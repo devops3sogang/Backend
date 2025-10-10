@@ -52,6 +52,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional // 여러 DB 작업을 하나의 트랜잭션으로 묶어 안정성 확보
     public void updateUserProfile(String email, UserUpdateRequest request) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
@@ -59,7 +60,7 @@ public class UserServiceImpl implements UserService {
         // 닉네임 변경 요청이 있을 경우
         if (StringUtils.hasText(request.getNickname())) {
             String newNickname = request.getNickname();
-            user.setNickname(request.getNickname());
+            user.setNickname(newNickname);
 
             // 1. 닉네임 변경 시, 해당 사용자가 작성한 모든 리뷰를 찾습니다.
             List<Review> reviewsWrittenByUser = reviewRepository.findByUserId(user.getId());
@@ -94,16 +95,20 @@ public class UserServiceImpl implements UserService {
         // 1. 사용자가 작성한 모든 리뷰를 찾아서 작성자 정보를 변경합니다.
         List<Review> reviewsWrittenByUser = reviewRepository.findByUserId(userId);
         for (Review review : reviewsWrittenByUser) {
-            review.setNickname("(알 수 없음)");
+            review.setNickname("(탈퇴한 회원)");
             // userId는 null로 만들거나 특정 값으로 설정할 수 있습니다.
             review.setUserId(null);
         }
-        reviewRepository.saveAll(reviewsWrittenByUser);
 
-        // 2. 사용자가 눌렀던 모든 '좋아요' 기록을 삭제합니다.
+        // 2. 불필요한 DB 호출을 막기 위한 if문 추가
+        if (!reviewsWrittenByUser.isEmpty()) {
+            reviewRepository.saveAll(reviewsWrittenByUser);
+        }
+
+        // 3. 사용자가 눌렀던 모든 '좋아요' 기록을 삭제합니다.
         likeRepository.deleteByUserId(userId);
 
-        // 3. 마지막으로 사용자 정보를 삭제합니다.
+        // 4. 마지막으로 사용자 정보를 삭제합니다.
         userRepository.delete(user);
     }
 }
