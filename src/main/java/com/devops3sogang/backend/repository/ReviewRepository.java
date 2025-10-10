@@ -9,4 +9,5 @@ public interface ReviewRepository extends MongoRepository<Review, String> {
     // Document 내부 객체의 필드로 검색: target 객체의 restaurantId 필드
     List<Review> findByTarget_RestaurantId(String restaurantId);
     List<Review> findByUserId(String userId);
+    void deleteByTarget_RestaurantId(String restaurantId);
 }

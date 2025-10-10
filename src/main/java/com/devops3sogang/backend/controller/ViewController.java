@@ -2,6 +2,7 @@ package com.devops3sogang.backend.controller;
 
 import com.devops3sogang.backend.document.Restaurant;
 import com.devops3sogang.backend.service.RestaurantService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -11,6 +12,7 @@ import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
+@Tag(name = "View Controller", description = "뷰 전용 API")
 public class ViewController {
 
     private final RestaurantService restaurantService;

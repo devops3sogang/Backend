@@ -16,4 +16,7 @@ public interface LikeRepository extends MongoRepository<Like, String> {
 
     // 리뷰 ID로 좋아요 정보를 삭제하는 메서드
     void deleteByReviewId(String reviewId);
+
+    // 여러 reviewId에 해당하는 모든 '좋아요'를 삭제하는 메서드 추가
+    void deleteAllByReviewIdIn(List<String> reviewIds);
 }

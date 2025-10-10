@@ -5,6 +5,7 @@ import com.devops3sogang.backend.dto.ReviewRequest;
 import com.devops3sogang.backend.dto.ReviewUpdateRequest;
 import com.devops3sogang.backend.service.ReviewService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/reviews")
 @RequiredArgsConstructor
+@Tag(name = "Review Controller", description = "리뷰 전용 API")
 public class ReviewController {
 
     private final ReviewService reviewService;

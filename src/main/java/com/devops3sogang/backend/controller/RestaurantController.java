@@ -7,6 +7,7 @@ import com.devops3sogang.backend.dto.ReviewRequest;
 import com.devops3sogang.backend.service.RestaurantService;
 import com.devops3sogang.backend.service.ReviewService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/restaurants")
 @RequiredArgsConstructor // final 필드에 대한 생성자를 자동으로 만들어줍니다.
+@Tag(name = "Restaurant Controller", description = "맛집 전용 API")
 public class RestaurantController {
 
     private final RestaurantService restaurantService;

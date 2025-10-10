@@ -50,9 +50,13 @@ public class SecurityConfig {
                         // GET 요청은 대부분 허용
                         .requestMatchers(HttpMethod.GET).permitAll()
 
+                        // '/admin/'으로 시작하는 모든 경로는 'ADMIN' 역할이 필요
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        // 맛집 등록은 ADMIN만
+                        .requestMatchers(HttpMethod.POST, "/restaurants").hasRole("ADMIN")
+
                         // --- 인증 필요 경로 (구체적으로 명시) ---
                         .requestMatchers("/users/me/**").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/restaurants").hasRole("ADMIN") // 맛집 등록은 ADMIN만
                         .requestMatchers(HttpMethod.POST, "/restaurants/{restaurantId}/reviews").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/reviews/{reviewId}").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/reviews/{reviewId}").authenticated()

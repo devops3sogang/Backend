@@ -3,6 +3,7 @@ package com.devops3sogang.backend.controller;
 import com.devops3sogang.backend.document.User;
 import com.devops3sogang.backend.service.LikeService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/reviews")
 @RequiredArgsConstructor
+@Tag(name = "Like Controller", description = "좋아요 전용 API")
 public class LikeController {
 
     private final LikeService likeService;

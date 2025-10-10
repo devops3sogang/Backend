@@ -3,6 +3,7 @@ package com.devops3sogang.backend.controller;
 import com.devops3sogang.backend.dto.LoginRequest;
 import com.devops3sogang.backend.dto.RegisterRequest;
 import com.devops3sogang.backend.service.AuthService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
+@Tag(name = "Auth Controller", description = "인증 전용 API")
 public class AuthController {
 
     private final AuthService authService;

@@ -3,6 +3,7 @@ package com.devops3sogang.backend.controller;
 import com.devops3sogang.backend.document.OnCampusMenu;
 import com.devops3sogang.backend.service.OnCampusMenuService;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,6 +18,7 @@ import java.time.format.DateTimeFormatter;
 @RestController
 @RequestMapping("/on-campus-menus")
 @RequiredArgsConstructor
+@Tag(name = "OnCampusMenu Controller", description = "교내 식당 전용 API")
 public class OnCampusMenuController {
 
     private final OnCampusMenuService onCampusMenuService;
