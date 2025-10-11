@@ -27,7 +27,7 @@ public class LikeController {
      */
     @PostMapping("/{reviewId}/like")
     @SecurityRequirement(name = "Bearer Authentication")
-    public ResponseEntity<Void> toggleLike(@PathVariable("reviewId") String reviewId, Authentication authentication) {
+    public ResponseEntity<LikeResponse> toggleLike(@PathVariable("reviewId") String reviewId, Authentication authentication) {
         // 인증된 사용자 정보에서 UserDetails를 가져옴
         User userDetails = (User) authentication.getPrincipal();
         String userId = userDetails.getId(); // User의 고유 ID
