@@ -2,6 +2,7 @@ package com.devops3sogang.backend.controller;
 
 import com.devops3sogang.backend.document.Review;
 import com.devops3sogang.backend.dto.ReviewRequest;
+import com.devops3sogang.backend.dto.ReviewResponse;
 import com.devops3sogang.backend.dto.ReviewUpdateRequest;
 import com.devops3sogang.backend.service.ReviewService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -13,6 +14,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/reviews")
@@ -30,12 +32,12 @@ public class ReviewController {
      * GET /reviews
      */
     @GetMapping
-    public ResponseEntity<List<Review>> getReviews(
+    public ResponseEntity<List<ReviewResponse>> getReviews(
         @RequestParam(name = "restaurantId", required = false) String restaurantId,
         @RequestParam(name = "limit", required = false, defaultValue = "5") int limit) {
-    
+
         List<Review> reviews;
-    
+
         if (restaurantId != null) {
         // 특정 식당의 리뷰 조회
         reviews = reviewService.findReviewsByRestaurantId(restaurantId);
@@ -43,8 +45,53 @@ public class ReviewController {
         // 전체 리뷰 조회 (최신순)
         reviews = reviewService.findRecentReviews(limit);
         }
-    
-        return ResponseEntity.ok(reviews);
+
+        // Review 엔티티를 ReviewResponse DTO로 변환
+        List<ReviewResponse> response = reviews.stream()
+            .map(this::convertToResponse)
+            .collect(Collectors.toList());
+
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Review 엔티티를 ReviewResponse DTO로 변환
+     */
+    private ReviewResponse convertToResponse(Review review) {
+        // menuRatings 변환 (기존 Ratings에서 taste, price, atmosphere를 menuRatings로 변환)
+        List<ReviewResponse.MenuRatingResponse> menuRatings = List.of(
+            ReviewResponse.MenuRatingResponse.builder()
+                .menuName(review.getTarget().getMenuItems())
+                .rating((review.getRatings().getTaste() +
+                        review.getRatings().getPrice() +
+                        review.getRatings().getAtmosphere()) / 3)
+                .build()
+        );
+
+        // RatingsResponse 생성
+        ReviewResponse.RatingsResponse ratingsResponse = ReviewResponse.RatingsResponse.builder()
+            .menuRatings(menuRatings)
+            .restaurantRating((review.getRatings().getTaste() +
+                              review.getRatings().getPrice() +
+                              review.getRatings().getAtmosphere()) / 3)
+            .build();
+
+        // imageUrls 변환 (단일 imageUrl을 리스트로 변환)
+        List<String> imageUrls = review.getImageUrl() != null && !review.getImageUrl().isEmpty()
+            ? List.of(review.getImageUrl())
+            : List.of();
+
+        return ReviewResponse.builder()
+            .id(review.getId())
+            .userId(review.getUserId())
+            .nickname(review.getNickname())
+            .restaurantId(review.getTarget().getRestaurantId())
+            .restaurantName(review.getTarget().getRestaurantName())
+            .ratings(ratingsResponse)
+            .content(review.getContent())
+            .imageUrls(imageUrls)
+            .likeCount(review.getLikeCount())
+            .build();
     }
 
     /**
