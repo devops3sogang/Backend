@@ -20,7 +20,9 @@ public class User implements UserDetails { // UserDetails 구현
     private String passwordHash;
     private String nickname;
     private String role; // 예: "USER", "ADMIN"
+    @CreatedDate
     private LocalDateTime createdAt;
+    @LastModifiedDate
     private LocalDateTime updatedAt;
 
     // --- UserDetails 인터페이스의 메서드 구현 ---
