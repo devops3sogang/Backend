@@ -1,6 +1,7 @@
 package com.devops3sogang.backend.controller;
 
 import com.devops3sogang.backend.document.User;
+import com.devops3sogang.backend.dto.LikeResponse;
 import com.devops3sogang.backend.service.LikeService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;

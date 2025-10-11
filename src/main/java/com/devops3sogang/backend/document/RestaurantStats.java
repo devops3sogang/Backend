@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class RestaurantStats {
-    private double averageRating;
+    private double rating;
     private int reviewCount;
+    private int likeCount;
 }

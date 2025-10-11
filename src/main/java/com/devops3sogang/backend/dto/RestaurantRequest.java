@@ -31,6 +31,9 @@ public class RestaurantRequest {
     @NotNull
     private GeoJsonPoint location;
 
+    @Schema(description = "식당 이미지 URL", example = "https://example.com/image.jpg")
+    private String imageUrl;
+
     @Schema(description = "교외 식당 메뉴 목록 (선택 사항)")
     private List<MenuItem> menu; // 교외 식당 메뉴
 }
