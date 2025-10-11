@@ -64,6 +64,13 @@ public class GlobalExceptionHandler {
             .body(new ErrorResponse(401, "INVALID_CREDENTIALS", ex.getMessage()));
     }
 
+    @ExceptionHandler(MenuNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleMenuNotFound(MenuNotFoundException ex) {
+        log.warn("메뉴를 찾을 수 없음: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+            .body(new ErrorResponse(404, "NOT_FOUND", ex.getMessage()));
+    }
+
     /**
      * @Valid 유효성 검사 실패 시 발생하는 예외를 처리합니다.
      * 
