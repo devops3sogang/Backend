@@ -23,12 +23,27 @@ public class ReviewController {
     private final ReviewService reviewService;
 
     /**
-     * 특정 맛집의 모든 리뷰 조회
+     * 리뷰 목록 조회
+     * - restaurantId 있으면: 특정 맛집의 리뷰 조회
+     * - restaurantId 없으면: 전체 리뷰 조회 (최신순 5개)
      * GET /reviews?restaurantId={restaurantId}
+     * GET /reviews
      */
     @GetMapping
-    public ResponseEntity<List<Review>> getReviewsByRestaurant(@RequestParam("restaurantId") String restaurantId) {
-        List<Review> reviews = reviewService.findReviewsByRestaurantId(restaurantId);
+    public ResponseEntity<List<Review>> getReviews(
+        @RequestParam(name = "restaurantId", required = false) String restaurantId,
+        @RequestParam(name = "limit", required = false, defaultValue = "5") int limit) {
+    
+        List<Review> reviews;
+    
+        if (restaurantId != null) {
+        // 특정 식당의 리뷰 조회
+        reviews = reviewService.findReviewsByRestaurantId(restaurantId);
+        } else {
+        // 전체 리뷰 조회 (최신순)
+        reviews = reviewService.findRecentReviews(limit);
+        }
+    
         return ResponseEntity.ok(reviews);
     }
 

@@ -18,6 +18,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import org.springframework.data.domain.Sort;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -72,6 +74,25 @@ public class ReviewServiceImpl implements ReviewService {
         List<Review> reviews = reviewRepository.findByTarget_RestaurantId(restaurantId);
         
         log.info("식당의 리뷰 목록 조회 완료 - 결과: {} 개", reviews.size());
+        return reviews;
+    }
+
+    @Override
+    public List<Review> findRecentReviews(int limit) {
+        log.info("최신 리뷰 조회 시작 - limit: {}", limit);
+    
+        List<Review> reviews;
+    
+        if (limit == 5) {
+            reviews = reviewRepository.findTop5ByOrderByCreatedAtDesc();
+        } else {
+            reviews = reviewRepository.findAllByOrderByCreatedAtDesc()
+                .stream()
+                .limit(limit)
+                .collect(Collectors.toList());
+        }
+    
+        log.info("최신 리뷰 조회 완료 - 결과: {} 개", reviews.size());
         return reviews;
     }
 

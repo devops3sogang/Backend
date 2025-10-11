@@ -21,7 +21,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-
     private final JwtUtil jwtUtil;
     private final UserDetailsServiceImpl userDetailsService;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
@@ -37,32 +36,30 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
-
-                // 예외 처리(Exception Handling) 설정을 추가합니다.
                 .exceptionHandling(exception -> exception
                         .accessDeniedHandler(customAccessDeniedHandler)
                 )
-
                 .authorizeHttpRequests(authorize -> authorize
-                        // --- 인증 불필요 경로 ---
+                        // --- 1. 인증 불필요 경로 (가장 먼저) ---
                         .requestMatchers("/auth/**", "/restaurants-view").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-resources/**").permitAll()
-                        // GET 요청은 대부분 허용
-                        .requestMatchers(HttpMethod.GET).permitAll()
-
-                        // '/admin/'으로 시작하는 모든 경로는 'ADMIN' 역할이 필요
+                        
+                        // --- 2. 관리자 전용 경로 ---
                         .requestMatchers("/admin/**").hasRole("ADMIN")
-                        // 맛집 등록은 ADMIN만
                         .requestMatchers(HttpMethod.POST, "/restaurants").hasRole("ADMIN")
-
-                        // --- 인증 필요 경로 (구체적으로 명시) ---
+                        .requestMatchers(HttpMethod.PUT, "/restaurants/**").hasRole("ADMIN")
+                        
+                        // --- 3. 인증 필요 경로 (구체적으로 명시) ---
                         .requestMatchers("/users/me/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/restaurants/{restaurantId}/reviews").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/reviews/{reviewId}").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/reviews/{reviewId}").authenticated()
                         .requestMatchers(HttpMethod.POST, "/reviews/{reviewId}/like").authenticated()
-
-                        // 그 외 모든 요청은 거부
+                        
+                        // --- 4. GET 요청은 대부분 허용 (마지막에) ---
+                        .requestMatchers(HttpMethod.GET).permitAll()
+                        
+                        // --- 5. 그 외 모든 요청은 거부 ---
                         .anyRequest().denyAll()
                 )
                 .sessionManagement(session -> session

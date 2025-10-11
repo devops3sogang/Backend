@@ -9,6 +9,7 @@ import java.util.List;
 public interface ReviewService {
     Review createReview(String userEmail, String restaurantId, ReviewRequest request);
     List<Review> findReviewsByRestaurantId(String restaurantId);
+    List<Review> findRecentReviews(int limit);
     Review updateReview(String reviewId, ReviewUpdateRequest request, String userEmail);
     void deleteReview(String reviewId, String userEmail);
 }
