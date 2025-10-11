@@ -11,12 +11,16 @@ public class Review {
     @Id
     private String id;
     private String userId;
-    private String nickname; //작성자닉네임? 
-    private ReviewTarget target; //리뷰대상 식당?메뉴? 
+    private String nickname;
+    private ReviewTarget target;
     private Ratings ratings;
     private String content;
     private String imageUrl;
     private int likeCount;
+    
+    @CreatedDate  // ← 자동으로 설정됨
     private LocalDateTime createdAt;
+    
+    @LastModifiedDate  // ← 자동으로 업데이트됨
     private LocalDateTime updatedAt;
 }
