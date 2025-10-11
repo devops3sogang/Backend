@@ -5,10 +5,12 @@ import com.devops3sogang.backend.document.Review;
 import com.devops3sogang.backend.document.User;
 import com.devops3sogang.backend.dto.UserProfileResponse;
 import com.devops3sogang.backend.dto.UserUpdateRequest;
+import com.devops3sogang.backend.exception.UserNotFoundException;
 import com.devops3sogang.backend.repository.LikeRepository;
 import com.devops3sogang.backend.repository.ReviewRepository;
 import com.devops3sogang.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +22,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
@@ -29,14 +32,20 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserProfileResponse getComprehensiveUserProfile(String email) {
+        log.info("프로필 조회 시작 - email: {}", email);
+        
         // 1. 사용자 정보를 찾습니다.
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> {
+                    log.warn("사용자를 찾을 수 없음 - email: {}", email);
+                    return new UserNotFoundException(email);
+                });
 
         // 2. 사용자가 작성한 리뷰 목록을 찾습니다.
         List<Review> writtenReviews = reviewRepository.findByUserId(user.getId());
+        log.debug("작성한 리뷰 수: {}", writtenReviews.size());
 
-        // 3. 사용자가 '좋아요'를 누른 리뷰 목록을 찾습니다. (기존 getLikedReviews 로직)
+        // 3. 사용자가 '좋아요'를 누른 리뷰 목록을 찾습니다.
         List<Like> userLikes = likeRepository.findByUserId(user.getId());
         List<String> likedReviewIds = userLikes.stream()
                 .map(Like::getReviewId)
@@ -46,20 +55,28 @@ public class UserServiceImpl implements UserService {
         if (!likedReviewIds.isEmpty()) {
             likedReviews = reviewRepository.findAllById(likedReviewIds);
         }
+        log.debug("좋아요한 리뷰 수: {}", likedReviews.size());
 
         // 4. 모든 정보를 UserProfileResponse DTO에 담아 반환합니다.
+        log.info("프로필 조회 완료 - email: {}", email);
         return UserProfileResponse.from(user, writtenReviews, likedReviews);
     }
 
     @Override
-    @Transactional // 여러 DB 작업을 하나의 트랜잭션으로 묶어 안정성 확보
+    @Transactional
     public void updateUserProfile(String email, UserUpdateRequest request) {
+        log.info("프로필 수정 시작 - email: {}", email);
+        
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> {
+                    log.warn("사용자를 찾을 수 없음 - email: {}", email);
+                    return new UserNotFoundException(email);
+                });
 
         // 닉네임 변경 요청이 있을 경우
         if (StringUtils.hasText(request.getNickname())) {
             String newNickname = request.getNickname();
+            log.info("닉네임 변경: {} → {}", user.getNickname(), newNickname);
             user.setNickname(newNickname);
 
             // 1. 닉네임 변경 시, 해당 사용자가 작성한 모든 리뷰를 찾습니다.
@@ -73,22 +90,30 @@ public class UserServiceImpl implements UserService {
             // 3. 업데이트된 리뷰들을 한 번에 저장합니다.
             if (!reviewsWrittenByUser.isEmpty()) {
                 reviewRepository.saveAll(reviewsWrittenByUser);
+                log.debug("리뷰 닉네임 업데이트 완료 - {} 개", reviewsWrittenByUser.size());
             }
         }
 
         // 비밀번호 변경 요청이 있을 경우
         if (StringUtils.hasText(request.getPassword())) {
             user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+            log.info("비밀번호 변경 완료 - email: {}", email);
         }
 
         userRepository.save(user);
+        log.info("프로필 수정 완료 - email: {}", email);
     }
 
     @Override
-    @Transactional // 여러 DB 작업을 하나의 트랜잭션으로 묶어 안정성 확보
+    @Transactional
     public void deleteUser(String email) {
+        log.info("회원 탈퇴 시작 - email: {}", email);
+        
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> {
+                    log.warn("사용자를 찾을 수 없음 - email: {}", email);
+                    return new UserNotFoundException(email);
+                });
 
         String userId = user.getId();
 
@@ -96,19 +121,21 @@ public class UserServiceImpl implements UserService {
         List<Review> reviewsWrittenByUser = reviewRepository.findByUserId(userId);
         for (Review review : reviewsWrittenByUser) {
             review.setNickname("(탈퇴한 회원)");
-            // userId는 null로 만들거나 특정 값으로 설정할 수 있습니다.
             review.setUserId(null);
         }
 
-        // 2. 불필요한 DB 호출을 막기 위한 if문 추가
+        // 2. 불필요한 DB 호출을 막기 위한 if문
         if (!reviewsWrittenByUser.isEmpty()) {
             reviewRepository.saveAll(reviewsWrittenByUser);
+            log.debug("리뷰 작성자 정보 변경 완료 - {} 개", reviewsWrittenByUser.size());
         }
 
         // 3. 사용자가 눌렀던 모든 '좋아요' 기록을 삭제합니다.
         likeRepository.deleteByUserId(userId);
+        log.debug("좋아요 기록 삭제 완료");
 
         // 4. 마지막으로 사용자 정보를 삭제합니다.
         userRepository.delete(user);
+        log.info("회원 탈퇴 완료 - email: {}", email);
     }
 }

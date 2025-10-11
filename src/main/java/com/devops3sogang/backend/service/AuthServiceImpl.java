@@ -4,45 +4,62 @@ import com.devops3sogang.backend.config.jwt.JwtUtil;
 import com.devops3sogang.backend.document.User;
 import com.devops3sogang.backend.dto.LoginRequest;
 import com.devops3sogang.backend.dto.RegisterRequest;
+import com.devops3sogang.backend.exception.DuplicateEmailException;
+import com.devops3sogang.backend.exception.InvalidCredentialsException;
 import com.devops3sogang.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AuthServiceImpl implements AuthService {
-
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtUtil jwtUtil; // JWT 토큰 생성을 위한 유틸리티 클래스
+    private final JwtUtil jwtUtil;
 
     @Override
     public User register(RegisterRequest request) {
+        log.info("회원가입 시작 - email: {}", request.getEmail());
+        
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("이미 가입된 이메일입니다.");
+            log.warn("이미 가입된 이메일 - email: {}", request.getEmail());
+            throw new DuplicateEmailException(request.getEmail());
         }
-
+        
         User user = new User();
         user.setEmail(request.getEmail());
         user.setNickname(request.getNickname());
-        user.setPasswordHash(passwordEncoder.encode(request.getPassword())); // 비밀번호 암호화
+        user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         user.setRole("USER");
-        // createdAt, updatedAt 등은 자동 설정을 위해 Auditing 기능 사용을 권장
-
-        return userRepository.save(user);
+        // createdAt, updatedAt은 @CreatedDate, @LastModifiedDate로 자동 설정됨
+        
+        User saved = userRepository.save(user);
+        log.info("회원가입 완료 - userId: {}, email: {}", saved.getId(), saved.getEmail());
+        
+        return saved;
     }
 
     @Override
     public String login(LoginRequest request) {
+        log.info("로그인 시도 - email: {}", request.getEmail());
+        
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-
+                .orElseThrow(() -> {
+                    log.warn("사용자를 찾을 수 없음 - email: {}", request.getEmail());
+                    return new InvalidCredentialsException();
+                });
+        
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
-            throw new RuntimeException("비밀번호가 일치하지 않습니다.");
+            log.warn("비밀번호 불일치 - email: {}", request.getEmail());
+            throw new InvalidCredentialsException();
         }
-
-        // return jwtUtil.generateToken(user.getEmail()); // 로그인 성공 시 토큰 생성
-        return jwtUtil.createToken(user.getEmail());
+        
+        String token = jwtUtil.createToken(user.getEmail());
+        log.info("로그인 성공 - email: {}", request.getEmail());
+        
+        return token;
     }
 }
