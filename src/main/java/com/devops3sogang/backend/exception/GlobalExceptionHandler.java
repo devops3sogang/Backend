@@ -1,6 +1,7 @@
 package com.devops3sogang.backend.exception;
 
 import com.devops3sogang.backend.dto.ErrorResponse;
+import com.devops3sogang.backend.dto.ValidationErrorResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
