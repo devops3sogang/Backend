@@ -18,10 +18,9 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/restaurants")
-@RequiredArgsConstructor // final 필드에 대한 생성자를 자동으로 만들어줍니다.
+@RequiredArgsConstructor
 @Tag(name = "Restaurant Controller", description = "맛집 전용 API")
 public class RestaurantController {
-
     private final RestaurantService restaurantService;
     private final ReviewService reviewService;
 
@@ -42,7 +41,8 @@ public class RestaurantController {
      * GET /restaurants/{restaurantId}
      */
     @GetMapping("/{restaurantId}")
-    public ResponseEntity<Restaurant> getRestaurantById(@PathVariable("restaurantId") String restaurantId) {
+    public ResponseEntity<Restaurant> getRestaurantById(
+            @PathVariable("restaurantId") String restaurantId) {
         Restaurant restaurant = restaurantService.findRestaurantById(restaurantId);
         return ResponseEntity.ok(restaurant);
     }
@@ -53,9 +53,10 @@ public class RestaurantController {
      */
     @PostMapping
     @SecurityRequirement(name = "Bearer Authentication")
-    public ResponseEntity<Restaurant> createRestaurant(@RequestBody RestaurantRequest request) {
+    public ResponseEntity<Restaurant> createRestaurant(
+            @Valid @RequestBody RestaurantRequest request) {  // @Valid 추가됨
         Restaurant newRestaurant = restaurantService.create(request);
-        return ResponseEntity.status(201).body(newRestaurant); // 201 Created
+        return ResponseEntity.status(201).body(newRestaurant);  // 201 Created
     }
 
     /**
@@ -71,5 +72,17 @@ public class RestaurantController {
         String userEmail = authentication.getName();
         Review newReview = reviewService.createReview(userEmail, restaurantId, request);
         return ResponseEntity.status(201).body(newReview);
+    }
+
+    /**
+     * (관리자) 맛집 삭제
+     * DELETE /restaurants/{restaurantId}
+     */
+    @DeleteMapping("/{restaurantId}")
+    @SecurityRequirement(name = "Bearer Authentication")
+    public ResponseEntity<?> deleteRestaurant(
+            @PathVariable("restaurantId") String restaurantId) {
+        restaurantService.deleteRestaurant(restaurantId);
+        return ResponseEntity.status(204).body(null);  // 204 No Content
     }
 }
