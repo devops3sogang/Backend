@@ -52,6 +52,18 @@ public class GlobalExceptionHandler {
             .body(new ErrorResponse(403, "FORBIDDEN", ex.getMessage()));
     }
     
+    @ExceptionHandler(DuplicateEmailException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicateEmail(DuplicateEmailException ex) {
+    return ResponseEntity.status(HttpStatus.CONFLICT)  // 409 Conflict
+            .body(new ErrorResponse(409, "DUPLICATE_EMAIL", ex.getMessage()));
+    }
+
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidCredentials(InvalidCredentialsException ex) {
+    return ResponseEntity.status(HttpStatus.UNAUTHORIZED)  // 401 Unauthorized
+            .body(new ErrorResponse(401, "INVALID_CREDENTIALS", ex.getMessage()));
+    }
+
     /**
      * @Valid 유효성 검사 실패 시 발생하는 예외를 처리합니다.
      * 
