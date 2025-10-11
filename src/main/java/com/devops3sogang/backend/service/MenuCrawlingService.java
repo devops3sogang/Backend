@@ -46,14 +46,16 @@ public class MenuCrawlingService {
             // 1. Python 스크립트 실행
             // 👇 "python" 대신 가상 환경 내부의 python 실행 파일 경로를 직접 지정합니다.
             //    사용자님의 로그 경로를 보아 Windows 환경이므로 아래와 같이 수정합니다.
-            ProcessBuilder processBuilder = new ProcessBuilder("venv\\Scripts\\python.exe", "crawler.py");
-            // (macOS/Linux 사용자의 경우: new ProcessBuilder("venv/bin/python", "crawler.py");)
+            ProcessBuilder pb = new ProcessBuilder(
+                "../venv/bin/python",      // 백엔드 실행 위치가 Backend/Backend일 경우
+                "../crawling/menu_crawler.py"
+            );
 
-            Map<String, String> env = processBuilder.environment();
+            Map<String, String> env = pb.environment();
             env.put("PYTHONIOENCODING", "UTF-8");
 
-            processBuilder.redirectErrorStream(true);
-            Process process = processBuilder.start();
+            pb.redirectErrorStream(true);
+            Process process = pb.start();
 
             // Python 스크립트의 출력(에러 메시지 포함)을 읽어서 로그로 남김
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
