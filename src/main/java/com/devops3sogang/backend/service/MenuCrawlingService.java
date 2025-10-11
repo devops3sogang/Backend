@@ -48,7 +48,7 @@ public class MenuCrawlingService {
             //    사용자님의 로그 경로를 보아 Windows 환경이므로 아래와 같이 수정합니다.
             ProcessBuilder pb = new ProcessBuilder(
                 "../venv/bin/python",      // 백엔드 실행 위치가 Backend/Backend일 경우
-                "../crawling/menu_crawler.py"
+                "../crawling/crawler.py"
             );
 
             Map<String, String> env = pb.environment();
