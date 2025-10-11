@@ -52,8 +52,8 @@ public class UserController {
      */
     @DeleteMapping("/me")
     public ResponseEntity<Void> deleteMyAccount(Authentication authentication) {
-        String userEmail = authentication.getName();
-        userService.deleteUser(userEmail);
-        return ResponseEntity.ok().build();
-    }
+    String userEmail = authentication.getName();
+    userService.deleteUser(userEmail);
+    return ResponseEntity.status(204).build();  // ← 204 No Content
+    } 
 }

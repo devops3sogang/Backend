@@ -23,6 +23,6 @@ public class AdminController {
     @DeleteMapping("/{restaurantId}")
     public ResponseEntity<Void> deleteRestaurant(@PathVariable("restaurantId") String restaurantId) {
         restaurantService.deleteRestaurant(restaurantId);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.status(204).build();  // ← 204 No Content
     }
 }
