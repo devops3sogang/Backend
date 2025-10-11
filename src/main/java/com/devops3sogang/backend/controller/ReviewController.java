@@ -54,10 +54,10 @@ public class ReviewController {
     @DeleteMapping("/{reviewId}")
     @SecurityRequirement(name = "Bearer Authentication")
     public ResponseEntity<Void> deleteReview(
-            @PathVariable("reviewId") String reviewId,
-            Authentication authentication) {
+        @PathVariable("reviewId") String reviewId,
+        Authentication authentication) {
         String userEmail = authentication.getName();
         reviewService.deleteReview(reviewId, userEmail);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.status(204).build();  // 204 No Content
     }
 }
