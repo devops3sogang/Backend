@@ -60,6 +60,19 @@ public class RestaurantController {
     }
 
     /**
+     * (관리자) 식당 정보 수정
+     * PUT /restaurants/{restaurantId}
+     */
+    @PutMapping("/{restaurantId}")
+    @SecurityRequirement(name = "Bearer Authentication")
+    public ResponseEntity<Restaurant> updateRestaurant(
+            @PathVariable("restaurantId") String restaurantId,
+            @Valid @RequestBody RestaurantRequest request) {
+        Restaurant updatedRestaurant = restaurantService.update(restaurantId, request);
+        return ResponseEntity.ok(updatedRestaurant);
+    }
+
+    /**
      * 특정 맛집에 리뷰 작성
      * POST /restaurants/{restaurantId}/reviews
      */

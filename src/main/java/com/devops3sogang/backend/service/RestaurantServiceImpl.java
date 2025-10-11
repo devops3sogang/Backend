@@ -91,6 +91,32 @@ public class RestaurantServiceImpl implements RestaurantService {
     }
 
     @Override
+    public Restaurant update(String restaurantId, RestaurantRequest request) {
+        log.info("식당 정보 수정 시작 - restaurantId: {}", restaurantId);
+    
+        // 1. 식당이 존재하는지 확인
+        Restaurant restaurant = findRestaurantById(restaurantId);
+    
+        // 2. 정보 업데이트
+        restaurant.setName(request.getName());
+        restaurant.setType(request.getType());
+        restaurant.setCategory(request.getCategory());
+        restaurant.setAddress(request.getAddress());
+        restaurant.setLocation(request.getLocation());
+        restaurant.setMenu(request.getMenu());
+    
+        if (request.getImageUrl() != null) {
+            restaurant.setImageUrl(request.getImageUrl());
+        }
+    
+        // 3. 저장
+        Restaurant updated = restaurantRepository.save(restaurant);
+        log.info("식당 정보 수정 완료 - restaurantId: {}, name: {}", updated.getId(), updated.getName());
+    
+        return updated;
+    }
+
+    @Override
     @Transactional
     public void deleteRestaurant(String restaurantId) {
         log.info("식당 삭제 시작 - ID: {}", restaurantId);

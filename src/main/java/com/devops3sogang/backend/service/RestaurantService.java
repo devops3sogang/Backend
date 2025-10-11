@@ -9,5 +9,6 @@ public interface RestaurantService {
     List<Restaurant> findRestaurants(String type, String category);
     Restaurant findRestaurantById(String id);
     Restaurant create(RestaurantRequest request);
+    Restaurant update(String restaurantId, RestaurantRequest request);
     void deleteRestaurant(String restaurantId);
 }
