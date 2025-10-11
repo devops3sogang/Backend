@@ -31,8 +31,9 @@ public class LikeController {
         User userDetails = (User) authentication.getPrincipal();
         String userId = userDetails.getId(); // User의 고유 ID
 
-        likeService.toggleLike(userId, reviewId);
+        boolean isLiked = likeService.toggleLike(userId, reviewId);
 
-        return ResponseEntity.ok().build();
+        LikeResponse response = new LikeResponse(isLiked);
+        return ResponseEntity.ok(response);
     }
 }
