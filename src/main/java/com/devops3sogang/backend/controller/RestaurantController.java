@@ -2,6 +2,7 @@ package com.devops3sogang.backend.controller;
 
 import com.devops3sogang.backend.document.Restaurant;
 import com.devops3sogang.backend.document.Review;
+import com.devops3sogang.backend.dto.RestaurantDetailResponse;
 import com.devops3sogang.backend.dto.RestaurantRequest;
 import com.devops3sogang.backend.dto.ReviewRequest;
 import com.devops3sogang.backend.service.RestaurantService;
@@ -37,14 +38,21 @@ public class RestaurantController {
     }
 
     /**
-     * 맛집 상세 정보 조회
+     * 맛집 상세 정보 조회 (리뷰 포함)
      * GET /restaurants/{restaurantId}
      */
     @GetMapping("/{restaurantId}")
-    public ResponseEntity<Restaurant> getRestaurantById(
-            @PathVariable("restaurantId") String restaurantId) {
-        Restaurant restaurant = restaurantService.findRestaurantById(restaurantId);
-        return ResponseEntity.ok(restaurant);
+    public ResponseEntity<RestaurantDetailResponse> getRestaurantById(
+            @PathVariable("restaurantId") String restaurantId,
+            Authentication authentication) {
+        // 현재 로그인한 사용자의 ID 가져오기 (로그인하지 않은 경우 null)
+        String currentUserId = null;
+        if (authentication != null && authentication.isAuthenticated()) {
+            currentUserId = authentication.getName();
+        }
+
+        RestaurantDetailResponse response = restaurantService.findRestaurantDetailById(restaurantId, currentUserId);
+        return ResponseEntity.ok(response);
     }
 
     /**

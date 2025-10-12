@@ -58,28 +58,26 @@ public class ReviewController {
      * Review 엔티티를 ReviewResponse DTO로 변환
      */
     private ReviewResponse convertToResponse(Review review) {
-        // menuRatings 변환 (기존 Ratings에서 taste, price, atmosphere를 menuRatings로 변환)
-        List<ReviewResponse.MenuRatingResponse> menuRatings = List.of(
-            ReviewResponse.MenuRatingResponse.builder()
-                .menuName(review.getTarget().getMenuItems())
-                .rating((review.getRatings().getTaste() +
-                        review.getRatings().getPrice() +
-                        review.getRatings().getAtmosphere()) / 3)
-                .build()
-        );
+        // menuRatings 변환 (null 체크 추가)
+        List<ReviewResponse.MenuRatingResponse> menuRatings = List.of();
+        if (review.getRatings() != null && review.getRatings().getMenuRatings() != null) {
+            menuRatings = review.getRatings().getMenuRatings().stream()
+                .map(mr -> ReviewResponse.MenuRatingResponse.builder()
+                    .menuName(mr.getMenuName())
+                    .rating(mr.getRating())
+                    .build())
+                .collect(Collectors.toList());
+        }
 
         // RatingsResponse 생성
+        int restaurantRating = (review.getRatings() != null) ? review.getRatings().getRestaurantRating() : 0;
         ReviewResponse.RatingsResponse ratingsResponse = ReviewResponse.RatingsResponse.builder()
             .menuRatings(menuRatings)
-            .restaurantRating((review.getRatings().getTaste() +
-                              review.getRatings().getPrice() +
-                              review.getRatings().getAtmosphere()) / 3)
+            .restaurantRating(restaurantRating)
             .build();
 
-        // imageUrls 변환 (단일 imageUrl을 리스트로 변환)
-        List<String> imageUrls = review.getImageUrl() != null && !review.getImageUrl().isEmpty()
-            ? List.of(review.getImageUrl())
-            : List.of();
+        // imageUrls 처리
+        List<String> imageUrls = review.getImageUrls() != null ? review.getImageUrls() : List.of();
 
         return ReviewResponse.builder()
             .id(review.getId())

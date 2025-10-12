@@ -24,10 +24,12 @@ public class DataLoader implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        // 레스토랑 데이터가 있으면 초기화하지 않음 (레스토랑 기준으로 체크)
+        // 기존 데이터 삭제 (데이터 구조가 변경되었으므로)
         if (restaurantRepository.count() > 0) {
-            System.out.println("데이터가 이미 존재합니다. 초기화를 건너뜁니다.");
-            return;
+            System.out.println("기존 데이터를 삭제합니다...");
+            reviewRepository.deleteAll();
+            restaurantRepository.deleteAll();
+            userRepository.deleteAll();
         }
 
         System.out.println("테스트 데이터를 초기화합니다...");
@@ -158,13 +160,15 @@ public class DataLoader implements CommandLineRunner {
         review1.setTarget(target1);
 
         Ratings ratings1 = new Ratings();
-        ratings1.setTaste(5);
-        ratings1.setPrice(4);
-        ratings1.setAtmosphere(4);
+        Ratings.MenuRating menuRating1 = new Ratings.MenuRating();
+        menuRating1.setMenuName("김치찌개");
+        menuRating1.setRating(5);
+        ratings1.setMenuRatings(Arrays.asList(menuRating1));
+        ratings1.setRestaurantRating(4);
         review1.setRatings(ratings1);
 
         review1.setContent("김치찌개가 정말 맛있어요! 국물이 깊고 진해요. 서강대 근처에서 최고입니다.");
-        review1.setImageUrl("https://example.com/images/review1.jpg");
+        review1.setImageUrls(Arrays.asList("https://example.com/images/review1.jpg"));
         review1.setLikeCount(2);
         review1.setCreatedAt(LocalDateTime.now().minusDays(5));
         review1.setUpdatedAt(LocalDateTime.now().minusDays(5));
@@ -183,13 +187,15 @@ public class DataLoader implements CommandLineRunner {
         review2.setTarget(target2);
 
         Ratings ratings2 = new Ratings();
-        ratings2.setTaste(4);
-        ratings2.setPrice(5);
-        ratings2.setAtmosphere(3);
+        Ratings.MenuRating menuRating2 = new Ratings.MenuRating();
+        menuRating2.setMenuName("제육볶음");
+        menuRating2.setRating(4);
+        ratings2.setMenuRatings(Arrays.asList(menuRating2));
+        ratings2.setRestaurantRating(4);
         review2.setRatings(ratings2);
 
         review2.setContent("제육볶음도 맛있네요. 가성비 좋아요!");
-        review2.setImageUrl(null);
+        review2.setImageUrls(null);
         review2.setLikeCount(0);
         review2.setCreatedAt(LocalDateTime.now().minusDays(3));
         review2.setUpdatedAt(LocalDateTime.now().minusDays(3));
@@ -208,13 +214,15 @@ public class DataLoader implements CommandLineRunner {
         review3.setTarget(target3);
 
         Ratings ratings3 = new Ratings();
-        ratings3.setTaste(5);
-        ratings3.setPrice(4);
-        ratings3.setAtmosphere(5);
+        Ratings.MenuRating menuRating3 = new Ratings.MenuRating();
+        menuRating3.setMenuName("등심돈까스");
+        menuRating3.setRating(5);
+        ratings3.setMenuRatings(Arrays.asList(menuRating3));
+        ratings3.setRestaurantRating(5);
         review3.setRatings(ratings3);
 
         review3.setContent("돈까스가 바삭하고 고기가 두툼해요. 분위기도 좋고 데이트하기 좋습니다.");
-        review3.setImageUrl("https://example.com/images/review3.jpg");
+        review3.setImageUrls(Arrays.asList("https://example.com/images/review3.jpg"));
         review3.setLikeCount(0);
         review3.setCreatedAt(LocalDateTime.now().minusDays(2));
         review3.setUpdatedAt(LocalDateTime.now().minusDays(2));
@@ -233,13 +241,15 @@ public class DataLoader implements CommandLineRunner {
         review4.setTarget(target4);
 
         Ratings ratings4 = new Ratings();
-        ratings4.setTaste(5);
-        ratings4.setPrice(3);
-        ratings4.setAtmosphere(4);
+        Ratings.MenuRating menuRating4 = new Ratings.MenuRating();
+        menuRating4.setMenuName("치즈돈까스");
+        menuRating4.setRating(5);
+        ratings4.setMenuRatings(Arrays.asList(menuRating4));
+        ratings4.setRestaurantRating(4);
         review4.setRatings(ratings4);
 
         review4.setContent("치즈돈까스 치즈가 쭉쭉 늘어나요! 맛있습니다. 다만 가격이 조금 비싼 편.");
-        review4.setImageUrl(null);
+        review4.setImageUrls(null);
         review4.setLikeCount(0);
         review4.setCreatedAt(LocalDateTime.now().minusDays(1));
         review4.setUpdatedAt(LocalDateTime.now().minusDays(1));
@@ -254,11 +264,9 @@ public class DataLoader implements CommandLineRunner {
         RestaurantStats stats = restaurant.getStats();
         stats.setReviewCount(reviews.size());
 
-        // 평균 평점 계산 (맛, 가격, 분위기 평균)
+        // 평균 평점 계산 (restaurantRating의 평균)
         double avgRating = reviews.stream()
-                .mapToDouble(r -> (r.getRatings().getTaste() +
-                        r.getRatings().getPrice() +
-                        r.getRatings().getAtmosphere()) / 3.0)
+                .mapToDouble(r -> r.getRatings().getRestaurantRating())
                 .average()
                 .orElse(0.0);
         stats.setRating(Math.round(avgRating * 10) / 10.0); // 소수점 첫째자리까지

@@ -7,6 +7,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Document(collection = "reviews")
@@ -18,12 +19,12 @@ public class Review {
     private ReviewTarget target;
     private Ratings ratings;
     private String content;
-    private String imageUrl;
+    private List<String> imageUrls;  // 이미지 URL 배열
     private int likeCount;
-    
-    @CreatedDate  // ← 자동으로 설정됨
+
+    @CreatedDate // ← 자동으로 설정됨
     private LocalDateTime createdAt;
-    
-    @LastModifiedDate  // ← 자동으로 업데이트됨
+
+    @LastModifiedDate // ← 자동으로 업데이트됨
     private LocalDateTime updatedAt;
 }

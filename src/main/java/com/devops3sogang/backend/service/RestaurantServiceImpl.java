@@ -3,6 +3,7 @@ package com.devops3sogang.backend.service;
 import com.devops3sogang.backend.document.Restaurant;
 import com.devops3sogang.backend.document.RestaurantStats;
 import com.devops3sogang.backend.document.Review;
+import com.devops3sogang.backend.dto.RestaurantDetailResponse;
 import com.devops3sogang.backend.dto.RestaurantRequest;
 import com.devops3sogang.backend.exception.RestaurantNotFoundException;
 import com.devops3sogang.backend.repository.LikeRepository;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -52,15 +54,87 @@ public class RestaurantServiceImpl implements RestaurantService {
     @Override
     public Restaurant findRestaurantById(String id) {
         log.info("식당 상세 조회 시작 - ID: {}", id);
-        
+
         Restaurant restaurant = restaurantRepository.findById(id)
                 .orElseThrow(() -> {
                     log.warn("식당을 찾을 수 없음 - ID: {}", id);
                     return new RestaurantNotFoundException(id);
                 });
-        
+
         log.info("식당 상세 조회 완료 - name: {}", restaurant.getName());
         return restaurant;
+    }
+
+    @Override
+    public RestaurantDetailResponse findRestaurantDetailById(String id, String currentUserId) {
+        log.info("식당 상세 조회 (리뷰 포함) 시작 - ID: {}, currentUserId: {}", id, currentUserId);
+
+        // 1. 식당 정보 조회
+        Restaurant restaurant = findRestaurantById(id);
+
+        // 2. 식당의 모든 리뷰 조회
+        List<Review> reviews = reviewRepository.findByTarget_RestaurantId(id);
+        log.info("조회된 리뷰 수: {}", reviews.size());
+
+        // 3. 리뷰를 DTO로 변환
+        List<RestaurantDetailResponse.ReviewInfo> reviewInfos = reviews.stream()
+                .map(review -> {
+                    // 현재 사용자가 이 리뷰에 좋아요를 눌렀는지 확인
+                    boolean isLiked = false;
+                    if (currentUserId != null) {
+                        isLiked = likeRepository.findByUserIdAndReviewId(currentUserId, review.getId()).isPresent();
+                    }
+
+                    // menuRatings 변환
+                    List<RestaurantDetailResponse.MenuRatingInfo> menuRatingInfos = new ArrayList<>();
+                    if (review.getRatings() != null && review.getRatings().getMenuRatings() != null) {
+                        menuRatingInfos = review.getRatings().getMenuRatings().stream()
+                                .map(mr -> RestaurantDetailResponse.MenuRatingInfo.builder()
+                                        .menuName(mr.getMenuName())
+                                        .rating(mr.getRating())
+                                        .build())
+                                .collect(Collectors.toList());
+                    }
+
+                    // ratings 변환
+                    RestaurantDetailResponse.RatingsInfo ratingsInfo = RestaurantDetailResponse.RatingsInfo.builder()
+                            .menuRatings(menuRatingInfos)
+                            .restaurantRating(review.getRatings() != null ? review.getRatings().getRestaurantRating() : 0)
+                            .build();
+
+                    return RestaurantDetailResponse.ReviewInfo.builder()
+                            .id(review.getId())
+                            .userId(review.getUserId())
+                            .nickname(review.getNickname())
+                            .ratings(ratingsInfo)
+                            .content(review.getContent())
+                            .imageUrls(review.getImageUrls())
+                            .likeCount(review.getLikeCount())
+                            .createdAt(review.getCreatedAt())
+                            .isLikedByCurrentUser(isLiked)
+                            .build();
+                })
+                .collect(Collectors.toList());
+
+        // 4. RestaurantDetailResponse 생성
+        RestaurantDetailResponse response = RestaurantDetailResponse.builder()
+                .id(restaurant.getId())
+                .name(restaurant.getName())
+                .type(restaurant.getType())
+                .category(restaurant.getCategory())
+                .address(restaurant.getAddress())
+                .location(restaurant.getLocation())
+                .imageUrl(restaurant.getImageUrl())
+                .isActive(restaurant.isActive())
+                .stats(restaurant.getStats())
+                .menu(restaurant.getMenu())
+                .reviews(reviewInfos)
+                .createdAt(restaurant.getCreatedAt())
+                .updatedAt(restaurant.getUpdatedAt())
+                .build();
+
+        log.info("식당 상세 조회 (리뷰 포함) 완료 - name: {}, 리뷰 수: {}", restaurant.getName(), reviewInfos.size());
+        return response;
     }
 
     @Override

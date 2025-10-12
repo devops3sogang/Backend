@@ -3,14 +3,22 @@ package com.devops3sogang.backend.document;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 public class Ratings {
-    @Schema(description = "맛 별점 (1~5)", example = "5")
-    private int taste;
+    @Schema(description = "메뉴별 평점 목록")
+    private List<MenuRating> menuRatings;
 
-    @Schema(description = "가격 별점 (1~5)", example = "4")
-    private int price;
+    @Schema(description = "식당 전체 평점 (1~5)", example = "4")
+    private int restaurantRating;
 
-    @Schema(description = "분위기 별점 (1~5)", example = "3")
-    private int atmosphere;
+    @Data
+    public static class MenuRating {
+        @Schema(description = "메뉴 이름", example = "참치김밥")
+        private String menuName;
+
+        @Schema(description = "메뉴 평점 (1~5)", example = "5")
+        private int rating;
+    }
 }
