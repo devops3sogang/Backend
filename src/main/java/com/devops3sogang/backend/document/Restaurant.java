@@ -1,5 +1,7 @@
 package com.devops3sogang.backend.document;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -17,6 +19,7 @@ public class Restaurant {
     private String address;
     private GeoJsonPoint location;
     private String imageUrl;
+    @JsonProperty("isActive")
     private boolean isActive;
     private RestaurantStats stats;
     private List<MenuItem> menu;

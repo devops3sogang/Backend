@@ -15,7 +15,7 @@ public class RestaurantRequest {
     @NotBlank
     private String name;
 
-    @Schema(description = "식당 타입 (캠퍼스 내부/외부)", example = "OFF_CAMPUS", allowableValues = {"ON_CAMPUS", "OFF_CAMPUS"})
+    @Schema(description = "식당 타입 (캠퍼스 내부/외부)", example = "OFF_CAMPUS", allowableValues = { "ON_CAMPUS", "OFF_CAMPUS" })
     @NotBlank
     private String type; // ON_CAMPUS 또는 OFF_CAMPUS
 
