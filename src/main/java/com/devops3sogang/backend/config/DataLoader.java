@@ -65,7 +65,7 @@ public class DataLoader implements CommandLineRunner {
     private Restaurant createRestaurant1() {
         Restaurant restaurant = new Restaurant();
         restaurant.setName("맛있는 김치찌개");
-        restaurant.setType("restaurant");
+        restaurant.setType("OFF_CAMPUS");
         restaurant.setCategory("한식");
         restaurant.setAddress("서울시 마포구 백범로 35");
 
@@ -107,7 +107,7 @@ public class DataLoader implements CommandLineRunner {
     private Restaurant createRestaurant2() {
         Restaurant restaurant = new Restaurant();
         restaurant.setName("서강 돈까스");
-        restaurant.setType("restaurant");
+        restaurant.setType("OFF_CAMPUS");
         restaurant.setCategory("일식");
         restaurant.setAddress("서울시 마포구 신수동 1-1");
 
@@ -153,7 +153,7 @@ public class DataLoader implements CommandLineRunner {
         review1.setNickname(user.getNickname());
 
         ReviewTarget target1 = new ReviewTarget();
-        target1.setType("restaurant");
+        target1.setType("RESTAURANT");
         target1.setRestaurantId(restaurant1.getId());
         target1.setRestaurantName(restaurant1.getName());
         target1.setMenuItems("김치찌개");
@@ -180,7 +180,7 @@ public class DataLoader implements CommandLineRunner {
         review2.setNickname(user.getNickname());
 
         ReviewTarget target2 = new ReviewTarget();
-        target2.setType("restaurant");
+        target2.setType("RESTAURANT");
         target2.setRestaurantId(restaurant1.getId());
         target2.setRestaurantName(restaurant1.getName());
         target2.setMenuItems("제육볶음");
@@ -207,7 +207,7 @@ public class DataLoader implements CommandLineRunner {
         review3.setNickname(user.getNickname());
 
         ReviewTarget target3 = new ReviewTarget();
-        target3.setType("restaurant");
+        target3.setType("RESTAURANT");
         target3.setRestaurantId(restaurant2.getId());
         target3.setRestaurantName(restaurant2.getName());
         target3.setMenuItems("등심돈까스");
@@ -234,7 +234,7 @@ public class DataLoader implements CommandLineRunner {
         review4.setNickname(user.getNickname());
 
         ReviewTarget target4 = new ReviewTarget();
-        target4.setType("restaurant");
+        target4.setType("RESTAURANT");
         target4.setRestaurantId(restaurant2.getId());
         target4.setRestaurantName(restaurant2.getName());
         target4.setMenuItems("치즈돈까스");
