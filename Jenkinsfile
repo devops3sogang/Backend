@@ -16,7 +16,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git url: 'https://github.com/devops3sogang/Backend.git', branch: 'master'  // GitHub 저장소 URL
+                git url: 'https://github.com/devops3sogang/Backend.git', branch: 'main'  // GitHub 저장소 URL
             }
         }
 

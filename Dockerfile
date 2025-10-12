@@ -1,20 +1,21 @@
 # Stage 1: Build the Spring Boot application
-FROM gradle:8.5-jdk22 AS builder
+FROM eclipse-temurin:22-jdk-jammy AS builder
 
 WORKDIR /app
 
-# Copy Gradle files
-COPY build.gradle settings.gradle ./
+# Copy Gradle wrapper and build files
+COPY gradlew gradlew.bat ./
 COPY gradle ./gradle
+COPY build.gradle settings.gradle ./
 
 # Download dependencies (cached if build.gradle hasn't changed)
-RUN gradle dependencies --no-daemon || true
+RUN chmod +x gradlew && ./gradlew dependencies --no-daemon || true
 
 # Copy source code
 COPY src ./src
 
 # Build the application
-RUN gradle clean build -x test --no-daemon
+RUN ./gradlew clean build -x test --no-daemon
 
 # Stage 2: Run the application
 FROM eclipse-temurin:22-jre-alpine
@@ -38,9 +39,9 @@ ENV PATH="/opt/venv/bin:$PATH"
 # Expose port 8080
 EXPOSE 8080
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:8080/api/actuator/health || exit 1
+# Health check (optional - 헬스체크 엔드포인트가 없으면 제거)
+# HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
+#     CMD wget --no-verbose --tries=1 --spider http://localhost:8080/api/actuator/health || exit 1
 
 # Run the application
 ENTRYPOINT ["java", "-jar", "app.jar"]
