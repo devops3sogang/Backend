@@ -40,7 +40,7 @@ public class ReviewServiceImpl implements ReviewService {
                     return new UserNotFoundException(userEmail);
                 });
 
-        restaurantRepository.findById(restaurantId)
+        var restaurant = restaurantRepository.findById(restaurantId)
                 .orElseThrow(() -> {
                     log.warn("식당을 찾을 수 없음 - id: {}", restaurantId);
                     return new RestaurantNotFoundException(restaurantId);
@@ -53,13 +53,12 @@ public class ReviewServiceImpl implements ReviewService {
         ReviewTarget target = new ReviewTarget();
         target.setType("RESTAURANT");
         target.setRestaurantId(restaurantId);
+        target.setRestaurantName(restaurant.getName());
         review.setTarget(target);
 
         review.setContent(request.getContent());
         review.setRatings(request.getRatings());
-        review.setImageUrls(request.getImageUrl() != null && !request.getImageUrl().isEmpty()
-            ? List.of(request.getImageUrl())
-            : null);
+        review.setImageUrls(request.getImageUrls());
         review.setLikeCount(0);
         // createdAt, updatedAt은 @CreatedDate, @LastModifiedDate로 자동 설정됨
 
@@ -121,9 +120,7 @@ public class ReviewServiceImpl implements ReviewService {
 
         review.setContent(request.getContent());
         review.setRatings(request.getRatings());
-        review.setImageUrls(request.getImageUrl() != null && !request.getImageUrl().isEmpty()
-            ? List.of(request.getImageUrl())
-            : null);
+        review.setImageUrls(request.getImageUrls());
         // updatedAt은 @LastModifiedDate로 자동 업데이트됨
 
         Review updated = reviewRepository.save(review);
