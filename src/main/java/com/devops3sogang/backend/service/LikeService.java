@@ -1,5 +1,7 @@
 package com.devops3sogang.backend.service;
 
+import com.devops3sogang.backend.dto.CreateLikeResponse;
+
 public interface LikeService {
-    boolean toggleLike(String userId, String reviewId);
+    CreateLikeResponse toggleLike(String userId, String reviewId);
 }
