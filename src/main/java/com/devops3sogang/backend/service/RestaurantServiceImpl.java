@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j  // Lombok의 SLF4J Logger 생성
+@Slf4j // Lombok의 SLF4J Logger 생성
 public class RestaurantServiceImpl implements RestaurantService {
     private final RestaurantRepository restaurantRepository;
     private final ReviewRepository reviewRepository;
@@ -30,9 +30,9 @@ public class RestaurantServiceImpl implements RestaurantService {
     @Override
     public List<Restaurant> findRestaurants(String type, String category) {
         log.info("식당 목록 조회 시작 - type: {}, category: {}", type, category);
-        
+
         List<Restaurant> restaurants;
-        
+
         if (StringUtils.hasText(type) && StringUtils.hasText(category)) {
             log.debug("필터 적용: type과 category 모두");
             restaurants = restaurantRepository.findByTypeAndCategoryAndIsActiveTrue(type, category);
@@ -46,7 +46,7 @@ public class RestaurantServiceImpl implements RestaurantService {
             log.debug("필터 적용: 없음 (전체 조회)");
             restaurants = restaurantRepository.findByIsActiveTrue();
         }
-        
+
         log.info("식당 목록 조회 완료 - 결과: {} 개", restaurants.size());
         return restaurants;
     }
@@ -99,7 +99,8 @@ public class RestaurantServiceImpl implements RestaurantService {
                     // ratings 변환
                     RestaurantDetailResponse.RatingsInfo ratingsInfo = RestaurantDetailResponse.RatingsInfo.builder()
                             .menuRatings(menuRatingInfos)
-                            .restaurantRating(review.getRatings() != null ? review.getRatings().getRestaurantRating() : 0)
+                            .restaurantRating(
+                                    review.getRatings() != null ? review.getRatings().getRestaurantRating() : 0)
                             .build();
 
                     return RestaurantDetailResponse.ReviewInfo.builder()
@@ -140,7 +141,7 @@ public class RestaurantServiceImpl implements RestaurantService {
     @Override
     public Restaurant create(RestaurantRequest request) {
         log.info("식당 등록 시작 - name: {}", request.getName());
-        
+
         Restaurant restaurant = new Restaurant();
         restaurant.setName(request.getName());
         restaurant.setType(request.getType());
@@ -148,8 +149,8 @@ public class RestaurantServiceImpl implements RestaurantService {
         restaurant.setAddress(request.getAddress());
         restaurant.setLocation(request.getLocation());
         restaurant.setMenu(request.getMenu());
-        restaurant.setActive(true);  // 기본값은 활성 상태
-        
+        restaurant.setActive(true); // 기본값은 활성 상태
+
         // Stats 초기화
         RestaurantStats stats = new RestaurantStats();
         stats.setRating(0.0);
@@ -157,20 +158,20 @@ public class RestaurantServiceImpl implements RestaurantService {
         stats.setLikeCount(0);
         restaurant.setStats(stats);
         log.debug("RestaurantStats 초기화 완료");
-        
+
         Restaurant saved = restaurantRepository.save(restaurant);
         log.info("식당 등록 완료 - ID: {}, name: {}", saved.getId(), saved.getName());
-        
+
         return saved;
     }
 
     @Override
     public Restaurant update(String restaurantId, RestaurantRequest request) {
         log.info("식당 정보 수정 시작 - restaurantId: {}", restaurantId);
-    
+
         // 1. 식당이 존재하는지 확인
         Restaurant restaurant = findRestaurantById(restaurantId);
-    
+
         // 2. 정보 업데이트
         restaurant.setName(request.getName());
         restaurant.setType(request.getType());
@@ -178,15 +179,15 @@ public class RestaurantServiceImpl implements RestaurantService {
         restaurant.setAddress(request.getAddress());
         restaurant.setLocation(request.getLocation());
         restaurant.setMenu(request.getMenu());
-    
+
         if (request.getImageUrl() != null) {
             restaurant.setImageUrl(request.getImageUrl());
         }
-    
+
         // 3. 저장
         Restaurant updated = restaurantRepository.save(restaurant);
         log.info("식당 정보 수정 완료 - restaurantId: {}, name: {}", updated.getId(), updated.getName());
-    
+
         return updated;
     }
 
@@ -194,35 +195,68 @@ public class RestaurantServiceImpl implements RestaurantService {
     @Transactional
     public void deleteRestaurant(String restaurantId) {
         log.info("식당 삭제 시작 - ID: {}", restaurantId);
-        
+
         // 1. findRestaurantById()로 존재 확인
         // 없으면 RestaurantNotFoundException 던짐
         Restaurant restaurant = findRestaurantById(restaurantId);
         log.debug("삭제 대상 식당 확인됨 - name: {}", restaurant.getName());
-        
+
         // 2. 삭제할 맛집에 달린 모든 리뷰를 조회
         List<Review> reviewsToDelete = reviewRepository.findByTarget_RestaurantId(restaurantId);
         log.info("삭제할 리뷰 수: {}", reviewsToDelete.size());
-        
+
         if (!reviewsToDelete.isEmpty()) {
             // 3. 리뷰들의 ID 목록을 추출
             List<String> reviewIdsToDelete = reviewsToDelete.stream()
                     .map(Review::getId)
                     .collect(Collectors.toList());
-            
+
             log.debug("리뷰 ID 목록 추출 완료 - {}개", reviewIdsToDelete.size());
-            
+
             // 4. 해당 리뷰들에 달린 모든 '좋아요'를 삭제
             likeRepository.deleteAllByReviewIdIn(reviewIdsToDelete);
             log.debug("리뷰의 좋아요 삭제 완료");
-            
+
             // 5. 모든 리뷰를 삭제
             reviewRepository.deleteAll(reviewsToDelete);
             log.debug("리뷰 삭제 완료");
         }
-        
+
         // 6. 마지막으로 맛집을 삭제
         restaurantRepository.deleteById(restaurantId);
         log.info("식당 삭제 완료 - ID: {}", restaurantId);
+    }
+
+    @Override
+    public void updateRestaurantStats(String restaurantId) {
+        // 1. 해당 가게의 모든 리뷰를 DB에서 가져옵니다.
+        List<Review> reviews = reviewRepository.findByTarget_RestaurantId(restaurantId);
+        Restaurant restaurant = restaurantRepository.findById(restaurantId)
+                .orElseThrow(() -> new RuntimeException("Restaurant not found with id: " + restaurantId));
+
+        RestaurantStats stats = restaurant.getStats();
+        if (stats == null) {
+            stats = new RestaurantStats(); // stats 객체가 없는 경우를 대비
+        }
+
+        if (reviews.isEmpty()) {
+            // 2-1. 리뷰가 없으면 통계를 0으로 초기화합니다.
+            stats.setRating(0.0);
+            stats.setReviewCount(0);
+        } else {
+            // 2-2. 리뷰가 있으면 평균 평점을 계산합니다.
+            double averageRating = reviews.stream()
+                    .mapToDouble(review -> review.getRatings().getRestaurantRating())
+                    .average()
+                    .orElse(0.0);
+
+            // 3. 계산된 통계를 Restaurant 객체에 업데이트합니다.
+            stats.setRating(Math.round(averageRating * 10) / 10.0); // 소수점 한 자리까지
+            stats.setReviewCount(reviews.size());
+        }
+
+        restaurant.setStats(stats);
+        // 4. 변경된 Restaurant 정보를 DB에 다시 저장합니다.
+        restaurantRepository.save(restaurant);
     }
 }

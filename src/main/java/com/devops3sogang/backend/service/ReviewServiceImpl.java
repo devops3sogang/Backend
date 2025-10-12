@@ -29,6 +29,7 @@ public class ReviewServiceImpl implements ReviewService {
     private final UserRepository userRepository;
     private final RestaurantRepository restaurantRepository;
     private final LikeRepository likeRepository;
+    private final RestaurantService restaurantService;
 
     @Override
     public Review createReview(String userEmail, String restaurantId, ReviewRequest request) {
@@ -63,6 +64,7 @@ public class ReviewServiceImpl implements ReviewService {
         // createdAt, updatedAt은 @CreatedDate, @LastModifiedDate로 자동 설정됨
 
         Review saved = reviewRepository.save(review);
+        restaurantService.updateRestaurantStats(restaurantId);
         log.info("리뷰 작성 완료 - reviewId: {}", saved.getId());
 
         return saved;
@@ -124,6 +126,8 @@ public class ReviewServiceImpl implements ReviewService {
         // updatedAt은 @LastModifiedDate로 자동 업데이트됨
 
         Review updated = reviewRepository.save(review);
+        String restaurantId = review.getTarget().getRestaurantId();
+        restaurantService.updateRestaurantStats(restaurantId);
         log.info("리뷰 수정 완료 - reviewId: {}", updated.getId());
 
         return updated;
@@ -158,5 +162,8 @@ public class ReviewServiceImpl implements ReviewService {
         // 2️⃣ 그 다음 리뷰 삭제
         reviewRepository.delete(review);
         log.info("리뷰 삭제 완료 - reviewId: {}", reviewId);
+
+        String restaurantId = review.getTarget().getRestaurantId();
+        restaurantService.updateRestaurantStats(restaurantId);
     }
 }
