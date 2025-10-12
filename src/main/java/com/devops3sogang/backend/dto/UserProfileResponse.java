@@ -2,6 +2,7 @@ package com.devops3sogang.backend.dto;
 
 import com.devops3sogang.backend.document.Review;
 import com.devops3sogang.backend.document.User;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
@@ -13,11 +14,23 @@ import java.util.List;
 @Schema(description = "사용자 통합 프로필 응답 DTO")
 public class UserProfileResponse {
 
-    @Schema(description = "사용자 기본 정보")
+    @JsonProperty("_id")
+    @Schema(description = "사용자 ID")
     private String id;
+
+    @Schema(description = "사용자 이메일")
     private String email;
+
+    @Schema(description = "사용자 닉네임")
     private String nickname;
 
+    @Schema(description = "사용자 권한")
+    private String role;
+
+    @Schema(description = "계정 생성일")
+    private String createdAt;
+
+    @JsonProperty("myReviews")
     @Schema(description = "사용자가 작성한 리뷰 목록")
     private List<Review> writtenReviews;
 
@@ -30,6 +43,8 @@ public class UserProfileResponse {
                 .id(user.getId())
                 .email(user.getEmail())
                 .nickname(user.getNickname())
+                .role(user.getRole())
+                .createdAt(user.getCreatedAt() != null ? user.getCreatedAt().toString() : null)
                 .writtenReviews(writtenReviews)
                 .likedReviews(likedReviews)
                 .build();
