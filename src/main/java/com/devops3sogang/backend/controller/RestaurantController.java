@@ -48,7 +48,10 @@ public class RestaurantController {
         // 현재 로그인한 사용자의 ID 가져오기 (로그인하지 않은 경우 null)
         String currentUserId = null;
         if (authentication != null && authentication.isAuthenticated()) {
-            currentUserId = authentication.getName();
+            // User 객체의 MongoDB ID를 가져옴 (좋아요 비교에 사용)
+            com.devops3sogang.backend.document.User userDetails =
+                (com.devops3sogang.backend.document.User) authentication.getPrincipal();
+            currentUserId = userDetails.getId();
         }
 
         RestaurantDetailResponse response = restaurantService.findRestaurantDetailById(restaurantId, currentUserId);

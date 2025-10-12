@@ -19,7 +19,7 @@ public class Review {
     private ReviewTarget target;
     private Ratings ratings;
     private String content;
-    private List<String> imageUrls;  // 이미지 URL 배열
+    private List<String> imageUrls; // 이미지 URL 배열
     private int likeCount;
 
     @CreatedDate // ← 자동으로 설정됨

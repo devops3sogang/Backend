@@ -90,6 +90,7 @@ public class RestaurantDetailResponse {
         @Schema(description = "생성일", example = "2025-01-05T10:30:00Z")
         private LocalDateTime createdAt;
 
+        @JsonProperty("likedByCurrentUser")
         @Schema(description = "현재 사용자의 좋아요 여부", example = "false")
         private boolean isLikedByCurrentUser;
     }
