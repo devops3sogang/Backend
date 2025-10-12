@@ -54,7 +54,7 @@ pipeline {
                             docker run -d --name ${CONTAINER_NAME} --restart unless-stopped \
                                 -p ${PORT}:8080 \
                                 -e SPRING_DATA_MONGODB_URI=mongodb://${MONGODB_HOST}:${MONGODB_PORT}/campus_food \
-                                -e JWT_SECRET=${JWT_SECRET} \
+                                -e JWT_SECRET='${JWT_SECRET}' \
                                 --network devops-network \
                                 ${IMAGE_NAME}:latest && \
                             echo '--- Pruning old images ---' && \
