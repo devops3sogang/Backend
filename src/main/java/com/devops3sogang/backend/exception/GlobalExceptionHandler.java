@@ -91,8 +91,6 @@ public class GlobalExceptionHandler {
         });
         
         // 모든 에러 메시지를 하나로 합침
-        String message = String.join(", ", errors.values());
-        
         ValidationErrorResponse errorResponse = new ValidationErrorResponse(
                 HttpStatus.BAD_REQUEST.value(),
                 "VALIDATION_ERROR",
