@@ -45,9 +45,17 @@ public class MenuCrawlingService {
         try {
             // 1. Python 스크립트 실행
             // 👇 "python" 대신 가상 환경 내부의 python 실행 파일 경로를 직접 지정합니다.
-            //    사용자님의 로그 경로를 보아 Windows 환경이므로 아래와 같이 수정합니다.
+            String os = System.getProperty("os.name").toLowerCase();
+            String pythonPath;
+
+            if (os.contains("win")) {
+                pythonPath = "./venv/Scripts/python.exe";  // Windows
+            } else {
+                pythonPath = "../venv/bin/python";          // macOS / Linux
+            }
+
             ProcessBuilder pb = new ProcessBuilder(
-                "../venv/bin/python",      // 백엔드 실행 위치가 Backend/Backend일 경우
+                pythonPath,
                 "../crawling/crawler.py"
             );
 
