@@ -49,9 +49,9 @@ public class MenuCrawlingService {
             String pythonPath;
 
             if (os.contains("win")) {
-                pythonPath = "./venv/Scripts/python.exe";  // Windows
+                pythonPath = "../crawling/venv/Scripts/python.exe";  // Windows
             } else {
-                pythonPath = "../venv/bin/python";          // macOS / Linux
+                pythonPath = "../crawling/venv/bin/python";          // macOS / Linux
             }
 
             ProcessBuilder pb = new ProcessBuilder(

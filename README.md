@@ -81,8 +81,13 @@ jwt.secret=n2r5u8x/A?D(G+KbPeShVmYp3s6v9y$B&E)H@McQfTjWnZq4t7w!z%C*F-JaNdRg
 - IntelliJ IDEA에서 DevOps3SogangApplication.java 파일을 직접 실행하거나, 아래 명령어를 사용합니다.
 
 ```Bash
-./gradlew build
+1. ./gradlew build
+
+2. 터미널에서 바로 실행:
 java -jar build/libs/backend-0.0.1-SNAPSHOT.jar
+
+또는 Gradle로 실행:
+./gradlew bootRun
 ```
 
 ---

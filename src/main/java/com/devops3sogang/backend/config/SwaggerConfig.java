@@ -26,7 +26,7 @@ public class SwaggerConfig {
         // 2. OpenAPI 객체에 반영
         return new OpenAPI()
                 .info(new Info()
-                        .title("MongoSpring REST API")
+                        .title("Backend REST API")
                         .description("Spring Boot + MongoDB 기반 REST API 문서입니다.")
                         .version("v1.0.0"))
                 .servers(List.of(

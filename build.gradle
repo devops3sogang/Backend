@@ -29,6 +29,10 @@ tasks.withType(JavaCompile).configureEach {
 	options.compilerArgs += '-parameters'
 }
 
+tasks.withType(JavaExec) {
+    systemProperty "file.encoding", "UTF-8"
+}
+
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
