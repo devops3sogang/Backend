@@ -3,7 +3,6 @@ package com.devops3sogang.backend.service;
 import com.devops3sogang.backend.document.Like;
 import com.devops3sogang.backend.document.Review;
 import com.devops3sogang.backend.dto.CreateLikeResponse;
-import com.devops3sogang.backend.exception.ReviewNotFoundException;
 import com.devops3sogang.backend.repository.LikeRepository;
 import com.devops3sogang.backend.repository.ReviewRepository;
 import lombok.RequiredArgsConstructor;
@@ -33,13 +32,6 @@ public class LikeServiceImpl implements LikeService {
     @Transactional
     public CreateLikeResponse toggleLike(String userId, String reviewId) {
         log.info("좋아요 토글 시작 - userId: {}, reviewId: {}", userId, reviewId);
-
-        // 리뷰 존재 확인
-        Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> {
-                    log.warn("리뷰를 찾을 수 없음 - reviewId: {}", reviewId);
-                    return new ReviewNotFoundException(reviewId);
-                });
 
         // 좋아요 존재 확인
         Optional<Like> existingLike = likeRepository.findByUserIdAndReviewId(userId, reviewId);
