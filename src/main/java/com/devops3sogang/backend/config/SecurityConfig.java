@@ -86,7 +86,8 @@ public class SecurityConfig {
                 configuration.setAllowedOrigins(
                                 List.of("http://localhost:8282", "http://localhost:8080", "http://43.202.229.52:8282",
                                                 "https://43.202.229.52:8443",
-                                                "https://xn--939at21b.xn--299aj40a3hj8tm.xn--h32bi4v.xn--3e0b707e:8443"));
+                                                "https://xn--939at21b.xn--299aj40a3hj8tm.xn--h32bi4v.xn--3e0b707e:8443",
+                                                "https://xn--939at21b.xn--299aj40a3hj8tm.xn--h32bi4v.xn--3e0b707e"));
                 configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
                 configuration.setAllowedHeaders(List.of("*"));
                 configuration.setAllowCredentials(true);
