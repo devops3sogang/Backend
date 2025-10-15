@@ -18,21 +18,21 @@ public class SwaggerConfig {
         // 1. SecurityScheme 정의: JWT 인증 방식을 설명합니다.
         final String securitySchemeName = "Bearer Authentication";
         SecurityScheme securityScheme = new SecurityScheme()
-                .name(securitySchemeName)
-                .type(SecurityScheme.Type.HTTP) // 인증 타입: HTTP
-                .scheme("bearer") // 스킴: Bearer
-                .bearerFormat("JWT"); // 베어러 포맷: JWT
+            .name(securitySchemeName)
+            .type(SecurityScheme.Type.HTTP) // 인증 타입: HTTP
+            .scheme("bearer") // 스킴: Bearer
+            .bearerFormat("JWT"); // 베어러 포맷: JWT
 
         // 2. OpenAPI 객체에 반영
         return new OpenAPI()
-                .info(new Info()
-                        .title("Backend REST API")
-                        .description("Spring Boot + MongoDB 기반 REST API 문서입니다.")
-                        .version("v1.0.0"))
-                .servers(List.of(
-                        new Server().url("http://localhost:8080").description("로컬 서버")
-                ))
-                // Components에 SecurityScheme 추가
-                .components(new Components().addSecuritySchemes(securitySchemeName, securityScheme));
+            .info(new Info()
+                    .title("Backend REST API")
+                    .description("Spring Boot + MongoDB 기반 REST API 문서입니다.")
+                    .version("v1.0.0"))
+            .servers(List.of(
+                    new Server().url("http://localhost:8080").description("로컬 서버")
+            ))
+            // Components에 SecurityScheme 추가
+            .components(new Components().addSecuritySchemes(securitySchemeName, securityScheme));
     }
 }

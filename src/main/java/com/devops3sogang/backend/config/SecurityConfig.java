@@ -37,63 +37,63 @@ public class SecurityConfig {
 
         @Bean
         public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-                http
-                                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                                .csrf(AbstractHttpConfigurer::disable)
-                                .formLogin(AbstractHttpConfigurer::disable)
-                                .httpBasic(AbstractHttpConfigurer::disable)
-                                .exceptionHandling(exception -> exception
-                                                .accessDeniedHandler(customAccessDeniedHandler))
-                                .authorizeHttpRequests(authorize -> authorize
-                                                // --- 1. 인증 불필요 경로 (가장 먼저) ---
-                                                .requestMatchers("/auth/**", "/restaurants-view").permitAll()
-                                                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**",
-                                                                "/swagger-resources/**",
-                                                                "/swagger-ui.html")
-                                                .permitAll()
+            http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .csrf(AbstractHttpConfigurer::disable)
+                .formLogin(AbstractHttpConfigurer::disable)
+                .httpBasic(AbstractHttpConfigurer::disable)
+                .exceptionHandling(exception -> exception
+                                .accessDeniedHandler(customAccessDeniedHandler))
+                .authorizeHttpRequests(authorize -> authorize
+                        // --- 1. 인증 불필요 경로 (가장 먼저) ---
+                        .requestMatchers("/auth/**", "/restaurants-view").permitAll()
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**",
+                                        "/swagger-resources/**",
+                                        "/swagger-ui.html")
+                        .permitAll()
 
-                                                // --- 2. 관리자 전용 경로 ---
-                                                .requestMatchers("/admin/**").hasRole("ADMIN")
-                                                .requestMatchers(HttpMethod.POST, "/restaurants").hasRole("ADMIN")
-                                                .requestMatchers(HttpMethod.PUT, "/restaurants/**").hasRole("ADMIN")
+                        // --- 2. 관리자 전용 경로 ---
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/restaurants").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/restaurants/**").hasRole("ADMIN")
 
-                                                // --- 3. 인증 필요 경로 (구체적으로 명시) ---
-                                                .requestMatchers("/users/me/**").authenticated()
-                                                .requestMatchers(HttpMethod.POST, "/restaurants/{restaurantId}/reviews")
-                                                .authenticated()
-                                                .requestMatchers(HttpMethod.PUT, "/reviews/{reviewId}").authenticated()
-                                                .requestMatchers(HttpMethod.DELETE, "/reviews/{reviewId}")
-                                                .authenticated()
-                                                .requestMatchers(HttpMethod.POST, "/reviews/{reviewId}/like")
-                                                .authenticated()
+                        // --- 3. 인증 필요 경로 (구체적으로 명시) ---
+                        .requestMatchers("/users/me/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/restaurants/{restaurantId}/reviews")
+                        .authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/reviews/{reviewId}").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/reviews/{reviewId}")
+                        .authenticated()
+                        .requestMatchers(HttpMethod.POST, "/reviews/{reviewId}/like")
+                        .authenticated()
 
-                                                // --- 4. GET 요청은 대부분 허용 (마지막에) ---
-                                                .requestMatchers(HttpMethod.GET).permitAll()
+                        // --- 4. GET 요청은 대부분 허용 (마지막에) ---
+                        .requestMatchers(HttpMethod.GET).permitAll()
 
-                                                // --- 5. 그 외 모든 요청은 거부 ---
-                                                .anyRequest().denyAll())
-                                .sessionManagement(session -> session
-                                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                                .addFilterBefore(new JwtAuthenticationFilter(jwtUtil, userDetailsService),
-                                                UsernamePasswordAuthenticationFilter.class);
+                        // --- 5. 그 외 모든 요청은 거부 ---
+                        .anyRequest().denyAll())
+                .sessionManagement(session -> session
+                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .addFilterBefore(new JwtAuthenticationFilter(jwtUtil, userDetailsService),
+                                UsernamePasswordAuthenticationFilter.class);
 
-                return http.build();
-        }
+        return http.build();
+    }
 
-        @Bean
-        public CorsConfigurationSource corsConfigurationSource() {
-                CorsConfiguration configuration = new CorsConfiguration();
-                configuration.setAllowedOrigins(
-                                List.of("http://localhost:8282", "http://localhost:8080", "http://43.202.229.52:8282",
-                                                "https://43.202.229.52:8443",
-                                                "https://xn--939at21b.xn--299aj40a3hj8tm.xn--h32bi4v.xn--3e0b707e:8443"));
-                configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-                configuration.setAllowedHeaders(List.of("*"));
-                configuration.setAllowCredentials(true);
-                configuration.setMaxAge(3600L);
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+            CorsConfiguration configuration = new CorsConfiguration();
+            configuration.setAllowedOrigins(
+                List.of("http://localhost:8282", "http://localhost:8080", "http://43.202.229.52:8282",
+                                "https://43.202.229.52:8443",
+                                "https://xn--939at21b.xn--299aj40a3hj8tm.xn--h32bi4v.xn--3e0b707e:8443"));
+            configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+            configuration.setAllowedHeaders(List.of("*"));
+            configuration.setAllowCredentials(true);
+            configuration.setMaxAge(3600L);
 
-                UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-                source.registerCorsConfiguration("/**", configuration);
-                return source;
-        }
+            UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+            source.registerCorsConfiguration("/**", configuration);
+            return source;
+    }
 }
