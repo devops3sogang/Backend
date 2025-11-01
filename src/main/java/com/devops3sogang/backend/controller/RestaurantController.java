@@ -2,7 +2,11 @@ package com.devops3sogang.backend.controller;
 
 import com.devops3sogang.backend.document.Restaurant;
 import com.devops3sogang.backend.dto.RestaurantDetailResponse;
+<<<<<<< HEAD
 import com.devops3sogang.backend.dto.RestaurantRequest;
+=======
+import com.devops3sogang.backend.dto.ReviewRequest;
+>>>>>>> b3eee3b (feat: update admin api)
 import com.devops3sogang.backend.service.RestaurantService;
 import com.devops3sogang.backend.service.ReviewService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -64,6 +68,7 @@ public class RestaurantController {
     }
 
     /**
+<<<<<<< HEAD
      * (관리자) 신규 맛집 등록
      * POST /restaurants
      */
@@ -98,5 +103,19 @@ public class RestaurantController {
             @PathVariable("restaurantId") String restaurantId) {
         restaurantService.deleteRestaurant(restaurantId);
         return ResponseEntity.noContent().build();
+=======
+     * 특정 맛집에 리뷰 작성
+     * POST /restaurants/{restaurantId}/reviews
+     */
+    @PostMapping("/{restaurantId}/reviews")
+    @SecurityRequirement(name = "Bearer Authentication")
+    public ResponseEntity<Review> createReview(
+            @PathVariable("restaurantId") String restaurantId,
+            @Valid @RequestBody ReviewRequest request,
+            Authentication authentication) {
+        String userEmail = authentication.getName();
+        Review newReview = reviewService.createReview(userEmail, restaurantId, request);
+        return ResponseEntity.status(201).body(newReview);
+>>>>>>> b3eee3b (feat: update admin api)
     }
 }
