@@ -25,4 +25,8 @@ public class Restaurant {
     private List<MenuItem> menu;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    // 거리 기반 검색 시에만 사용되는 필드 (DB에는 저장되지 않음)
+    @Transient
+    private Double distance;
 }
