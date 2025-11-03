@@ -21,33 +21,40 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j // Lombok의 SLF4J Logger 생성
+@Slf4j
 public class RestaurantServiceImpl implements RestaurantService {
     private final RestaurantRepository restaurantRepository;
     private final ReviewRepository reviewRepository;
     private final LikeRepository likeRepository;
 
     @Override
-    public List<Restaurant> findRestaurants(String type, String category) {
-        log.info("식당 목록 조회 시작 - type: {}, category: {}", type, category);
+    public List<Restaurant> findRestaurants(String type, String category, Double latitude, Double longitude, Integer radius) {
+        log.info("식당 목록 조회 시작 - type: {}, category: {}, lat: {}, lng: {}, radius: {}", type, category, latitude, longitude, radius);
 
         List<Restaurant> restaurants;
 
-        if (StringUtils.hasText(type) && StringUtils.hasText(category)) {
-            log.debug("필터 적용: type과 category 모두");
-            restaurants = restaurantRepository.findByTypeAndCategoryAndIsActiveTrue(type, category);
-        } else if (StringUtils.hasText(type)) {
-            log.debug("필터 적용: type만");
-            restaurants = restaurantRepository.findByTypeAndIsActiveTrue(type);
-        } else if (StringUtils.hasText(category)) {
-            log.debug("필터 적용: category만");
-            restaurants = restaurantRepository.findByCategoryAndIsActiveTrue(category);
+        // 거리 기반 검색인 경우
+        if (latitude != null && longitude != null) {
+            log.debug("거리 기반 조회 실행");
+            double maxDistance = (radius != null) ? radius.doubleValue() : 1000.0; // 기본값 1km
+            restaurants = restaurantRepository.findByDistance(latitude, longitude, maxDistance, type, category);
+            log.info("거리 기반 식당 조회 완료 - 반경 {}m, 결과: {} 개", maxDistance, restaurants.size());
         } else {
-            log.debug("필터 적용: 없음 (전체 조회)");
-            restaurants = restaurantRepository.findByIsActiveTrue();
+            if (StringUtils.hasText(type) && StringUtils.hasText(category)) {
+                log.debug("필터 적용: type과 category 모두");
+                restaurants = restaurantRepository.findByTypeAndCategoryAndIsActiveTrue(type, category);
+            } else if (StringUtils.hasText(type)) {
+                log.debug("필터 적용: type만");
+                restaurants = restaurantRepository.findByTypeAndIsActiveTrue(type);
+            } else if (StringUtils.hasText(category)) {
+                log.debug("필터 적용: category만");
+                restaurants = restaurantRepository.findByCategoryAndIsActiveTrue(category);
+            } else {
+                log.debug("필터 적용: 없음 (전체 조회)");
+                restaurants = restaurantRepository.findByIsActiveTrue();
+            }
+            log.info("식당 조회 완료 - 결과: {} 개", restaurants.size());
         }
-
-        log.info("식당 목록 조회 완료 - 결과: {} 개", restaurants.size());
         return restaurants;
     }
 
