@@ -1,10 +1,10 @@
 package com.devops3sogang.backend.controller;
 
 import com.devops3sogang.backend.document.Restaurant;
-import com.devops3sogang.backend.document.Review;
+import com.devops3sogang.backend.document.Review; //
 import com.devops3sogang.backend.dto.RestaurantDetailResponse;
 import com.devops3sogang.backend.dto.RestaurantRequest;
-import com.devops3sogang.backend.dto.ReviewRequest;
+import com.devops3sogang.backend.dto.ReviewRequest; //
 import com.devops3sogang.backend.service.RestaurantService;
 import com.devops3sogang.backend.service.ReviewService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -20,20 +20,28 @@ import java.util.List;
 @RestController
 @RequestMapping("/restaurants")
 @RequiredArgsConstructor
-@Tag(name = "Restaurant Controller", description = "맛집 전용 API")
+@Tag(name = "Restaurant Controller", description = "식당 전용 API")
 public class RestaurantController {
     private final RestaurantService restaurantService;
     private final ReviewService reviewService;
 
     /**
-     * 맛집 목록 조회 (필터링 가능)
-     * GET /restaurants?type=OFF_CAMPUS&category=한식
+     * 맛집 목록 조회 (필터링 및 거리 기반 검색 가능)
+     * GET /restaurants?type=OFF_CAMPUS&category=한식&lat=37.123&lng=127.123&radius=500
      */
     @GetMapping
     public ResponseEntity<List<Restaurant>> getRestaurants(
             @RequestParam(name = "type", required = false) String type,
-            @RequestParam(name = "category", required = false) String category) {
-        List<Restaurant> restaurants = restaurantService.findRestaurants(type, category);
+            @RequestParam(name = "category", required = false) String category,
+            @RequestParam(name = "lat", required = false) Double latitude,
+            @RequestParam(name = "lng", required = false) Double longitude,
+            @RequestParam(name = "radius", required = false) Integer radius) {
+        // lat, lng는 둘 다 제공되거나 둘 다 제공되지 않아야 함
+        if ((latitude == null) != (longitude == null)) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        List<Restaurant> restaurants = restaurantService.findRestaurants(type, category, latitude, longitude, radius);
         return ResponseEntity.ok(restaurants);
     }
 
