@@ -10,7 +10,8 @@ import java.util.List;
 @Data
 @Schema(description = "리뷰 작성 요청 DTO")
 public class ReviewRequest {
-
+    private String restaurantId;
+    
     @Schema(description = "리뷰 본문 (선택 사항)", example = "여기 정말 맛있어요! 추천합니다.")
     private String content;
 

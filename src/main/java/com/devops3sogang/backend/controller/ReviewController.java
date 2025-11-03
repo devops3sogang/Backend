@@ -1,6 +1,7 @@
 package com.devops3sogang.backend.controller;
 
 import com.devops3sogang.backend.document.Review;
+import com.devops3sogang.backend.dto.ReviewRequest;
 import com.devops3sogang.backend.dto.ReviewResponse;
 import com.devops3sogang.backend.dto.ReviewUpdateRequest;
 import com.devops3sogang.backend.service.ReviewService;
@@ -38,11 +39,11 @@ public class ReviewController {
         List<Review> reviews;
 
         if (restaurantId != null) {
-        // 특정 식당의 리뷰 조회
-        reviews = reviewService.findReviewsByRestaurantId(restaurantId);
+            // 특정 식당의 리뷰 조회
+            reviews = reviewService.findReviewsByRestaurantId(restaurantId);
         } else {
-        // 전체 리뷰 조회 (최신순)
-        reviews = reviewService.findRecentReviews(limit);
+            // 전체 리뷰 조회 (최신순)
+            reviews = reviewService.findRecentReviews(limit);
         }
 
         // Review 엔티티를 ReviewResponse DTO로 변환
@@ -51,6 +52,20 @@ public class ReviewController {
             .collect(Collectors.toList());
 
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * 리뷰 작성
+     * POST /reviews
+     */
+    @PostMapping
+    @SecurityRequirement(name = "Bearer Authentication")
+    public ResponseEntity<Review> createReview(
+            @Valid @RequestBody ReviewRequest request,
+            Authentication authentication) {
+        String userEmail = authentication.getName();
+        Review newReview = reviewService.createReview(userEmail, request.getRestaurantId(), request);
+        return ResponseEntity.status(201).body(newReview);
     }
 
     /**
@@ -117,6 +132,6 @@ public class ReviewController {
         Authentication authentication) {
         String userEmail = authentication.getName();
         reviewService.deleteReview(reviewId, userEmail);
-        return ResponseEntity.status(204).build();  // 204 No Content
+        return ResponseEntity.noContent().build();
     }
 }
