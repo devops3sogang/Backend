@@ -7,7 +7,7 @@ import com.devops3sogang.backend.dto.RestaurantRequest;
 import java.util.List;
 
 public interface RestaurantService {
-    List<Restaurant> findRestaurants(String type, String category);
+    List<Restaurant> findRestaurants(String type, String category, Double latitude, Double longitude, Integer radius);
 
     Restaurant findRestaurantById(String id);
 
