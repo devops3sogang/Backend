@@ -22,7 +22,7 @@ import java.util.List;
 @Tag(name = "Restaurant Controller", description = "식당 전용 API")
 public class RestaurantController {
     private final RestaurantService restaurantService;
-    private ReviewService reviewService;
+    private final ReviewService reviewService;
 
     /**
      * 맛집 목록 조회 (필터링 및 거리 기반 검색 가능)
