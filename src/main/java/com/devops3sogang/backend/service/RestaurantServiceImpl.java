@@ -17,7 +17,6 @@ import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -122,7 +121,7 @@ public class RestaurantServiceImpl implements RestaurantService {
                                         .menuName(mr.getMenuName())
                                         .rating(mr.getRating())
                                         .build())
-                                .collect(Collectors.toList());
+                                .toList();
                     }
 
                     // ratings 변환
@@ -144,7 +143,7 @@ public class RestaurantServiceImpl implements RestaurantService {
                             .isLikedByCurrentUser(isLiked)
                             .build();
                 })
-                .collect(Collectors.toList());
+                .toList();
 
         // 4. RestaurantDetailResponse 생성
         RestaurantDetailResponse response = RestaurantDetailResponse.builder()
@@ -238,7 +237,7 @@ public class RestaurantServiceImpl implements RestaurantService {
             // 3. 리뷰들의 ID 목록을 추출
             List<String> reviewIdsToDelete = reviewsToDelete.stream()
                     .map(Review::getId)
-                    .collect(Collectors.toList());
+                    .toList();
 
             log.debug("리뷰 ID 목록 추출 완료 - {}개", reviewIdsToDelete.size());
 

@@ -14,7 +14,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/reviews")
@@ -49,7 +48,7 @@ public class ReviewController {
         // Review 엔티티를 ReviewResponse DTO로 변환
         List<ReviewResponse> response = reviews.stream()
             .map(this::convertToResponse)
-            .collect(Collectors.toList());
+            .toList();
 
         return ResponseEntity.ok(response);
     }
@@ -80,7 +79,7 @@ public class ReviewController {
                     .menuName(mr.getMenuName())
                     .rating(mr.getRating())
                     .build())
-                .collect(Collectors.toList());
+                .toList();
         }
 
         // RatingsResponse 생성
