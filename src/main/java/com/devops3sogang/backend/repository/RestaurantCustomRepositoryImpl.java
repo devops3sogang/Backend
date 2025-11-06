@@ -29,7 +29,7 @@ public class RestaurantCustomRepositoryImpl implements RestaurantCustomRepositor
         // 1. 거리 기반 필터링 및 정렬
         operations.add(Aggregation.geoNear(
             NearQuery.near(longitude, latitude)
-                    .maxDistance(maxDistanceInMeters, Metrics.METERS)
+                    .maxDistance(maxDistanceInMeters, Metrics.KILOMETERS)
                     .spherical(true),
             "distance"
         ));
