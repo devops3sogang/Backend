@@ -24,7 +24,7 @@ public class AdminController {
     private final ReviewService reviewService; // Injected ReviewService
 
     /**
-     * (관리자) 신규 맛집을 등록합니다.
+     * (관리자) 신규 맛집을 등록
      * POST /admin/restaurants
      */
     @PostMapping("/restaurants")
@@ -35,7 +35,7 @@ public class AdminController {
     }
 
     /**
-     * (관리자) 특정 맛집 정보를 수정합니다.
+     * (관리자) 특정 맛집 정보를 수정
      * PUT /admin/restaurants/{restaurantId}
      */
     @PutMapping("/restaurants/{restaurantId}")
@@ -47,8 +47,8 @@ public class AdminController {
     }
 
     /**
-     * (관리자) 특정 맛집을 ID로 삭제합니다.
-     * (관련된 리뷰, 좋아요 정보도 함께 삭제됩니다.)
+     * (관리자) 특정 맛집을 ID로 삭제
+     * (관련된 리뷰, 좋아요 정보도 함께 삭제)
      * DELETE /admin/restaurants/{restaurantId}
      */
     @DeleteMapping("/restaurants/{restaurantId}")
@@ -58,7 +58,7 @@ public class AdminController {
     }
 
     /**
-     * (관리자) 특정 리뷰를 ID로 삭제합니다.
+     * (관리자) 특정 리뷰를 ID로 삭제
      * DELETE /admin/reviews/{reviewId}
      */
     @DeleteMapping("/reviews/{reviewId}")
