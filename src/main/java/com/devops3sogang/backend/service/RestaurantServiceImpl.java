@@ -28,8 +28,8 @@ public class RestaurantServiceImpl implements RestaurantService {
     private final LikeRepository likeRepository;
 
     @Override
-    public List<Restaurant> findRestaurants(String type, String category, Double latitude, Double longitude, Integer radius) {
-        log.info("식당 목록 조회 시작 - type: {}, category: {}, lat: {}, lng: {}, radius: {}", type, category, latitude, longitude, radius);
+    public List<Restaurant> findRestaurants(String type, String category, Double latitude, Double longitude, Integer radius, String sortBy) {
+        log.info("식당 목록 조회 시작 - type: {}, category: {}, lat: {}, lng: {}, radius: {}, sortBy: {}", type, category, latitude, longitude, radius, sortBy);
 
         List<Restaurant> restaurants;
 
@@ -39,19 +39,41 @@ public class RestaurantServiceImpl implements RestaurantService {
             double maxDistance = (radius != null) ? radius.doubleValue() : 1000.0; // 기본값 1km
             restaurants = restaurantRepository.findByDistance(latitude, longitude, maxDistance, type, category);
             log.info("거리 기반 식당 조회 완료 - 반경 {}m, 결과: {} 개", maxDistance, restaurants.size());
+        
+            // 거리 기반 검색 시 평점순 정렬이 요청되면 메모리에서 정렬
+            if ("rating".equalsIgnoreCase(sortBy)) {
+                log.debug("평점순 정렬 적용");
+                restaurants = restaurants.stream()
+                    .sorted((r1, r2) -> {
+                        double rating1 = r1.getStats() != null ? r1.getStats().getRating() : 0.0;
+                        double rating2 = r2.getStats() != null ? r2.getStats().getRating() : 0.0;
+                        return Double.compare(rating2, rating1); // 내림차순
+                    })
+                    .collect(Collectors.toList());
+            }
         } else {
-            if (StringUtils.hasText(type) && StringUtils.hasText(category)) {
-                log.debug("필터 적용: type과 category 모두");
-                restaurants = restaurantRepository.findByTypeAndCategoryAndIsActiveTrue(type, category);
-            } else if (StringUtils.hasText(type)) {
-                log.debug("필터 적용: type만");
-                restaurants = restaurantRepository.findByTypeAndIsActiveTrue(type);
-            } else if (StringUtils.hasText(category)) {
-                log.debug("필터 적용: category만");
-                restaurants = restaurantRepository.findByCategoryAndIsActiveTrue(category);
+            if ("rating".equalsIgnoreCase(sortBy)) {
+                log.debug("평점순 정렬 조회");
+                if (StringUtils.hasText(type) && StringUtils.hasText(category)) {
+                    restaurants = restaurantRepository.findByTypeAndCategoryAndIsActiveTrueOrderByStats_RatingDesc(type, category);
+                } else if (StringUtils.hasText(type)) {
+                    restaurants = restaurantRepository.findByTypeAndIsActiveTrueOrderByStats_RatingDesc(type);
+                } else if (StringUtils.hasText(category)) {
+                    restaurants = restaurantRepository.findByCategoryAndIsActiveTrueOrderByStats_RatingDesc(category);
+                } else {
+                    restaurants = restaurantRepository.findByIsActiveTrueOrderByStats_RatingDesc();
+                }
             } else {
-                log.debug("필터 적용: 없음 (전체 조회)");
-                restaurants = restaurantRepository.findByIsActiveTrue();
+                log.debug("기본 정렬로 조회");
+                if (StringUtils.hasText(type) && StringUtils.hasText(category)) {
+                    restaurants = restaurantRepository.findByTypeAndCategoryAndIsActiveTrue(type, category);
+                } else if (StringUtils.hasText(type)) {
+                    restaurants = restaurantRepository.findByTypeAndIsActiveTrue(type);
+                } else if (StringUtils.hasText(category)) {
+                    restaurants = restaurantRepository.findByCategoryAndIsActiveTrue(category);
+                } else {
+                    restaurants = restaurantRepository.findByIsActiveTrue();
+                }
             }
             log.info("식당 조회 완료 - 결과: {} 개", restaurants.size());
         }

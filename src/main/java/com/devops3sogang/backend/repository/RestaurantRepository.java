@@ -10,4 +10,12 @@ public interface RestaurantRepository extends MongoRepository<Restaurant, String
     List<Restaurant> findByTypeAndIsActiveTrue(String type);
     List<Restaurant> findByCategoryAndIsActiveTrue(String category);
     List<Restaurant> findByIsActiveTrue();
+    // 평점순 정렬 (전체)
+    List<Restaurant> findByIsActiveTrueOrderByStats_RatingDesc();
+    // 평점순 정렬 (type 필터)
+    List<Restaurant> findByTypeAndIsActiveTrueOrderByStats_RatingDesc(String type);
+    // 평점순 정렬 (category 필터)
+    List<Restaurant> findByCategoryAndIsActiveTrueOrderByStats_RatingDesc(String category);
+    // 평점순 정렬 (type + category 필터)
+    List<Restaurant> findByTypeAndCategoryAndIsActiveTrueOrderByStats_RatingDesc(String type, String category);
 }

@@ -32,13 +32,14 @@ public class RestaurantController {
             @RequestParam(name = "category", required = false) String category,
             @RequestParam(name = "lat", required = false) Double latitude,
             @RequestParam(name = "lng", required = false) Double longitude,
-            @RequestParam(name = "radius", required = false) Integer radius) {
+            @RequestParam(name = "radius", required = false) Integer radius,
+            @RequestParam(name = "sortBy", required = false, defaultValue = "distance") String sortBy) {
         // lat, lng는 둘 다 제공되거나 둘 다 제공되지 않아야 함
         if ((latitude == null) != (longitude == null)) {
             return ResponseEntity.badRequest().build();
         }
 
-        List<Restaurant> restaurants = restaurantService.findRestaurants(type, category, latitude, longitude, radius);
+        List<Restaurant> restaurants = restaurantService.findRestaurants(type, category, latitude, longitude, radius, sortBy);
         return ResponseEntity.ok(restaurants);
     }
 
