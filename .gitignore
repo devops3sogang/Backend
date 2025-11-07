@@ -15,7 +15,8 @@ __pycache__/
 *.pyd
 
 # Generated files
-menu.json
+restaurant_info.json
+weekly_menus.json
 
 ### Java ###
 # Compiled class file
