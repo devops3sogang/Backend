@@ -34,8 +34,9 @@ public class DataLoader implements CommandLineRunner {
 
         System.out.println("테스트 데이터를 초기화합니다...");
 
-        // 1. 테스트 유저 생성
+        // 1. 테스트 유저 + 관리자 계정 생성
         User testUser = createTestUser();
+        User adminUser = createAdminUser(); // 관리자 생성
 
         // 2. 가게 2곳 생성
         Restaurant restaurant1 = createRestaurant1();
@@ -46,6 +47,7 @@ public class DataLoader implements CommandLineRunner {
 
         System.out.println("테스트 데이터 초기화 완료!");
         System.out.println("- 유저: " + testUser.getEmail());
+        System.out.println("- 관리자: " + adminUser.getEmail());
         System.out.println("- 가게 1: " + restaurant1.getName());
         System.out.println("- 가게 2: " + restaurant2.getName());
         System.out.println("- 리뷰: 4개");
@@ -60,6 +62,18 @@ public class DataLoader implements CommandLineRunner {
         user.setCreatedAt(LocalDateTime.now());
         user.setUpdatedAt(LocalDateTime.now());
         return userRepository.save(user);
+    }
+
+    // 관리자 계정 생성
+    private User createAdminUser() {
+        User admin = new User();
+        admin.setEmail("admin@sogang.ac.kr");
+        admin.setPasswordHash(passwordEncoder.encode("admin1234"));
+        admin.setNickname("관리자");
+        admin.setRole("ADMIN");
+        admin.setCreatedAt(LocalDateTime.now());
+        admin.setUpdatedAt(LocalDateTime.now());
+        return userRepository.save(admin);
     }
 
     private Restaurant createRestaurant1() {
