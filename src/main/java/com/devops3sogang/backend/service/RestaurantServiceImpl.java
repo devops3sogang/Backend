@@ -48,7 +48,7 @@ public class RestaurantServiceImpl implements RestaurantService {
                         double rating2 = r2.getStats() != null ? r2.getStats().getRating() : 0.0;
                         return Double.compare(rating2, rating1); // 내림차순
                     })
-                    .collect(Collectors.toList());
+                    .toList();
             }
         } else {
             if ("rating".equalsIgnoreCase(sortBy)) {

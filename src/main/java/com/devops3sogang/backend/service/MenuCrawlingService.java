@@ -8,6 +8,8 @@ import com.devops3sogang.backend.dto.crawler.DailyMenuData;
 import com.devops3sogang.backend.dto.crawler.MenuInfo;
 import com.devops3sogang.backend.repository.OnCampusMenuRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import io.jsonwebtoken.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -24,7 +26,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -114,7 +115,7 @@ public class MenuCrawlingService {
                     List<String> items = Arrays.stream(menuInfo.getMenu().split("<br>"))
                             .map(String::trim)
                             .filter(s -> !s.isEmpty())
-                            .collect(Collectors.toList());
+                            .toList();
                     meal.setItems(items);
                     meals.add(meal);
                 }
@@ -142,9 +143,16 @@ public class MenuCrawlingService {
 
             return true; // 모든 과정 성공 시 true 반환
 
+        } catch (IOException e) {
+            log.error("파일 또는 프로세스 실행 중 I/O 오류 발생", e);
+            return false;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt(); // 인터럽트 복원
+            log.error("Python 크롤러 실행이 중단되었습니다.", e);
+            return false;
         } catch (Exception e) {
-            log.error("메뉴 크롤링 및 저장 과정에서 오류가 발생했습니다.", e);
-            return false; // 예외 발생 시 false 반환
+            log.error("예상치 못한 오류가 발생했습니다.", e);
+            return false;
         }
     }
 }
