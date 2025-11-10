@@ -4,8 +4,11 @@ import com.devops3sogang.backend.document.Restaurant;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface RestaurantRepository extends MongoRepository<Restaurant, String>, RestaurantCustomRepository {
+    Optional<Restaurant> findByNameAndAddress(String name, String address);
+
     List<Restaurant> findByTypeAndCategoryAndIsActiveTrue(String type, String category);
     List<Restaurant> findByTypeAndIsActiveTrue(String type);
     List<Restaurant> findByCategoryAndIsActiveTrue(String category);

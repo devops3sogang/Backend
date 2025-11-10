@@ -5,6 +5,7 @@ import com.devops3sogang.backend.document.RestaurantStats;
 import com.devops3sogang.backend.document.Review;
 import com.devops3sogang.backend.dto.RestaurantDetailResponse;
 import com.devops3sogang.backend.dto.RestaurantRequest;
+import com.devops3sogang.backend.exception.RestaurantAlreadyExistsException;
 import com.devops3sogang.backend.exception.RestaurantNotFoundException;
 import com.devops3sogang.backend.repository.LikeRepository;
 import com.devops3sogang.backend.repository.RestaurantRepository;
@@ -169,6 +170,12 @@ public class RestaurantServiceImpl implements RestaurantService {
     @Override
     public Restaurant create(RestaurantRequest request) {
         log.info("식당 등록 시작 - name: {}", request.getName());
+
+        // 중복 체크
+        restaurantRepository.findByNameAndAddress(request.getName(), request.getAddress())
+                .ifPresent(r -> {
+                    throw new RestaurantAlreadyExistsException(request.getName(), request.getAddress());
+                });
 
         Restaurant restaurant = new Restaurant();
         restaurant.setName(request.getName());

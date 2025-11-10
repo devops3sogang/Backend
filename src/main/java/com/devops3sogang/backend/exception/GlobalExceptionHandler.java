@@ -32,6 +32,13 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(RestaurantAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handleRestaurantAlreadyExists(RestaurantAlreadyExistsException ex) {
+        log.warn("이미 존재하는 식당: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(new ErrorResponse(HttpStatus.CONFLICT.value(), "RESTAURANT_ALREADY_EXISTS", ex.getMessage()));
+    }
+
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleUserNotFound(UserNotFoundException ex) {
         log.warn("사용자를 찾을 수 없음: {}", ex.getMessage());

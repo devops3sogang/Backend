@@ -3,6 +3,8 @@ package com.devops3sogang.backend.service;
 import com.devops3sogang.backend.document.GeoJsonPoint;
 import com.devops3sogang.backend.document.Restaurant;
 import com.devops3sogang.backend.document.RestaurantStats;
+import com.devops3sogang.backend.dto.RestaurantRequest;
+import com.devops3sogang.backend.exception.RestaurantAlreadyExistsException;
 import com.devops3sogang.backend.repository.LikeRepository;
 import com.devops3sogang.backend.repository.RestaurantRepository;
 import com.devops3sogang.backend.repository.ReviewRepository;
@@ -16,6 +18,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 class RestaurantServiceTest {
@@ -38,6 +41,27 @@ class RestaurantServiceTest {
         restaurantRepository.deleteAll();
         reviewRepository.deleteAll();
         likeRepository.deleteAll();
+    }
+
+    @Test
+    @DisplayName("중복된 이름과 주소로 식당 생성 시 예외 발생")
+    void createDuplicateRestaurant_ThrowsException() {
+        // Given
+        RestaurantRequest request = new RestaurantRequest();
+        request.setName("중복 식당");
+        request.setAddress("중복 주소");
+        request.setType("ON_CAMPUS");
+        request.setCategory("한식");
+        GeoJsonPoint location = new GeoJsonPoint();
+        location.setCoordinates(new double[]{126.9410, 37.5515});
+        request.setLocation(location);
+
+        restaurantService.create(request); // First creation
+
+        // When & Then
+        assertThrows(RestaurantAlreadyExistsException.class, () -> {
+            restaurantService.create(request); // Second creation with same data
+        });
     }
 
     @Test
