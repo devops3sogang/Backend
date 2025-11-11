@@ -16,9 +16,7 @@ import com.devops3sogang.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -91,7 +89,7 @@ public class ReviewServiceImpl implements ReviewService {
             reviews = reviewRepository.findAllByOrderByCreatedAtDesc()
                     .stream()
                     .limit(limit)
-                    .collect(Collectors.toList());
+                    .toList();
         }
 
         log.info("최신 리뷰 조회 완료 - 결과: {} 개", reviews.size());
