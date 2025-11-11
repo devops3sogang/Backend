@@ -13,8 +13,14 @@ import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
 import org.springframework.data.mongodb.core.index.GeoSpatialIndexed;
 import org.springframework.data.mongodb.core.index.GeoSpatialIndexType;
 
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.CompoundIndexes;
+
 @Data
 @Document(collection = "restaurants")
+@CompoundIndexes({
+    @CompoundIndex(name = "name_address_idx", def = "{'name': 1, 'address': 1}", unique = true)
+})
 public class Restaurant {
     @Id
     private String id;

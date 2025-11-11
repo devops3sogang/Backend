@@ -2,6 +2,7 @@ package com.devops3sogang.backend.exception;
 
 import com.devops3sogang.backend.dto.ErrorResponse;
 import com.devops3sogang.backend.dto.ValidationErrorResponse;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -70,6 +71,13 @@ public class GlobalExceptionHandler {
         log.warn("메뉴를 찾을 수 없음: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
             .body(new ErrorResponse(404, "NOT_FOUND", ex.getMessage()));
+    }
+
+    @ExceptionHandler(DuplicateRestaurantException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicateRestaurant(DuplicateRestaurantException ex) {
+        log.warn("중복 식당 생성 시도: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT) // 409 Conflict
+                .body(new ErrorResponse(409, "DUPLICATE_RESTAURANT", ex.getMessage()));
     }
 
     /**

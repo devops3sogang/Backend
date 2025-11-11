@@ -5,6 +5,7 @@ import com.devops3sogang.backend.document.RestaurantStats;
 import com.devops3sogang.backend.document.Review;
 import com.devops3sogang.backend.dto.RestaurantDetailResponse;
 import com.devops3sogang.backend.dto.RestaurantRequest;
+import com.devops3sogang.backend.exception.DuplicateRestaurantException;
 import com.devops3sogang.backend.exception.RestaurantNotFoundException;
 import com.devops3sogang.backend.repository.LikeRepository;
 import com.devops3sogang.backend.repository.RestaurantRepository;
@@ -178,6 +179,16 @@ public class RestaurantServiceImpl implements RestaurantService {
     public Restaurant create(RestaurantRequest request) {
         log.info("식당 등록 시작 - name: {}", request.getName());
 
+        // 1) 입력 정규화(공백 정리 등) — 규칙은 팀 합의대로
+        String normName = normalizeName(request.getName());
+        String normAddress = normalizeAddress(request.getAddress());
+
+        // 2) 사전 존재 체크(빠른 실패)
+        if (restaurantRepository.existsByNameAndAddress(normName, normAddress)) {
+            throw new DuplicateRestaurantException("동일한 이름과 주소의 식당이 이미 존재합니다.");
+        }
+        
+        // 3) 엔티티 구성
         Restaurant restaurant = new Restaurant();
         restaurant.setName(request.getName());
         restaurant.setType(request.getType());
@@ -193,12 +204,25 @@ public class RestaurantServiceImpl implements RestaurantService {
         stats.setReviewCount(0);
         stats.setLikeCount(0);
         restaurant.setStats(stats);
-        log.debug("RestaurantStats 초기화 완료");
 
-        Restaurant saved = restaurantRepository.save(restaurant);
-        log.info("식당 등록 완료 - ID: {}, name: {}", saved.getId(), saved.getName());
+        // 4) 저장(레이스 컨디션 방어: 유니크 인덱스 충돌)
+        try {
+            Restaurant saved = restaurantRepository.save(restaurant);
+            log.info("식당 등록 완료 - ID: {}, name: {}", saved.getId(), saved.getName());
+            return saved;
+        } catch (org.springframework.dao.DuplicateKeyException e) {
+            // 동시에 같은 요청이 들어온 경우 등
+            throw new DuplicateRestaurantException("동일한 이름과 주소의 식당이 이미 존재합니다.");
+        }
+    }
 
-        return saved;
+    // === 헬퍼 ===
+    private String normalizeName(String name) {
+        return name == null ? null : name.trim();
+    }
+
+    private String normalizeAddress(String address) {
+        return address == null ? null : address.trim();
     }
 
     private GeoJsonPoint toGeoJsonPoint(com.devops3sogang.backend.dto.GeoJsonPointDTO dto) {

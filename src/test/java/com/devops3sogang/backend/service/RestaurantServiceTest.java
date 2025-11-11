@@ -5,6 +5,8 @@ import com.devops3sogang.backend.document.RestaurantStats;
 import com.devops3sogang.backend.repository.LikeRepository;
 import com.devops3sogang.backend.repository.RestaurantRepository;
 import com.devops3sogang.backend.repository.ReviewRepository;
+import com.devops3sogang.backend.dto.RestaurantRequest;
+import com.devops3sogang.backend.exception.DuplicateRestaurantException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -38,6 +40,38 @@ class RestaurantServiceTest {
         restaurantRepository.deleteAll();
         reviewRepository.deleteAll();
         likeRepository.deleteAll();
+    }
+
+    @Test
+    @DisplayName("이름+주소가 동일하면 중복 식당 생성 불가(409)")
+    void createRestaurant_DuplicateNameAndAddress_ShouldThrow() {
+        // Given: 최초 1개 생성
+        RestaurantRequest req1 = new RestaurantRequest();
+        req1.setName("맛있는 김치찌개");     // 동일 이름
+        req1.setAddress("서울시 마포구 백범로 35"); // 동일 주소
+        req1.setType("OFF_CAMPUS");
+        req1.setCategory("한식");
+        // 위치/메뉴는 생성 로직에 필수는 아니면 생략 가능 (null 허용)
+        restaurantService.create(req1);
+
+        // When: 대소문자만 다르게 같은 값으로 다시 생성 시도(IgnoreCase 검증)
+        RestaurantRequest req2 = new RestaurantRequest();
+        req2.setName("맛있는 김치찌개");          // same
+        req2.setAddress("서울시 마포구 백범로 35"); // same (대소문자/공백 차이도 허용 시 여기에 변형 줘도 OK)
+        req2.setType("OFF_CAMPUS");
+        req2.setCategory("한식");
+
+        // Then: DuplicateRestaurantException 발생해야 함
+        org.junit.jupiter.api.Assertions.assertThrows(
+                DuplicateRestaurantException.class,
+                () -> restaurantService.create(req2)
+        );
+
+        // 그리고 실제로는 여전히 1개만 존재해야 함(활성 레코드 기준)
+        List<Restaurant> all = restaurantRepository.findByIsActiveTrue();
+        assertThat(all).hasSize(1);
+        assertThat(all.get(0).getName()).isEqualTo("맛있는 김치찌개");
+        assertThat(all.get(0).getAddress()).isEqualTo("서울시 마포구 백범로 35");
     }
 
     @Test
