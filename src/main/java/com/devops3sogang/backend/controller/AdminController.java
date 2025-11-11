@@ -12,12 +12,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/admin") // Changed base path to /admin
 @RequiredArgsConstructor
 @Tag(name = "Admin Controller", description = "관리자 전용 API")
 @SecurityRequirement(name = "Bearer Authentication")
+@PreAuthorize("hasRole('ADMIN')")
 public class AdminController {
 
     private final RestaurantService restaurantService;
