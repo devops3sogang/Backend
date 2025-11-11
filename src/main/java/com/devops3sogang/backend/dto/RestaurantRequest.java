@@ -1,6 +1,5 @@
 package com.devops3sogang.backend.dto;
 
-import com.devops3sogang.backend.document.GeoJsonPoint;
 import com.devops3sogang.backend.document.MenuItem;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -29,7 +28,7 @@ public class RestaurantRequest {
 
     @Schema(description = "식당 위치 정보 (GeoJSON)")
     @NotNull
-    private GeoJsonPoint location;
+    private GeoJsonPointDTO location;
 
     @Schema(description = "식당 이미지 URL", example = "https://example.com/image.jpg")
     private String imageUrl;

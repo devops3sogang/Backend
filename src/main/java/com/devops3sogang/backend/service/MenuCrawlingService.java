@@ -24,7 +24,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -114,7 +113,7 @@ public class MenuCrawlingService {
                     List<String> items = Arrays.stream(menuInfo.getMenu().split("<br>"))
                             .map(String::trim)
                             .filter(s -> !s.isEmpty())
-                            .collect(Collectors.toList());
+                            .toList();
                     meal.setItems(items);
                     meals.add(meal);
                 }

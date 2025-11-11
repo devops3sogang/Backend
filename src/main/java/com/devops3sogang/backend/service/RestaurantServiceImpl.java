@@ -14,10 +14,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -49,7 +49,7 @@ public class RestaurantServiceImpl implements RestaurantService {
                         double rating2 = r2.getStats() != null ? r2.getStats().getRating() : 0.0;
                         return Double.compare(rating2, rating1); // 내림차순
                     })
-                    .collect(Collectors.toList());
+                    .toList();
             }
         } else {
             if ("rating".equalsIgnoreCase(sortBy)) {
@@ -122,7 +122,7 @@ public class RestaurantServiceImpl implements RestaurantService {
                                         .menuName(mr.getMenuName())
                                         .rating(mr.getRating())
                                         .build())
-                                .collect(Collectors.toList());
+                                .toList();
                     }
 
                     // ratings 변환
@@ -144,7 +144,7 @@ public class RestaurantServiceImpl implements RestaurantService {
                             .isLikedByCurrentUser(isLiked)
                             .build();
                 })
-                .collect(Collectors.toList());
+                .toList();
 
         // 4. RestaurantDetailResponse 생성
         RestaurantDetailResponse response = RestaurantDetailResponse.builder()
@@ -153,7 +153,7 @@ public class RestaurantServiceImpl implements RestaurantService {
                 .type(restaurant.getType())
                 .category(restaurant.getCategory())
                 .address(restaurant.getAddress())
-                .location(restaurant.getLocation())
+                .location(toDto(restaurant.getLocation()))
                 .imageUrl(restaurant.getImageUrl())
                 .isActive(restaurant.isActive())
                 .stats(restaurant.getStats())
@@ -167,6 +167,13 @@ public class RestaurantServiceImpl implements RestaurantService {
         return response;
     }
 
+    private com.devops3sogang.backend.dto.GeoJsonPointDTO toDto(GeoJsonPoint p) {
+        if (p == null) return null;
+        com.devops3sogang.backend.dto.GeoJsonPointDTO dto = new com.devops3sogang.backend.dto.GeoJsonPointDTO();
+        dto.setCoordinates(new double[]{p.getX(), p.getY()}); // x=lng, y=lat
+        return dto;
+    }
+
     @Override
     public Restaurant create(RestaurantRequest request) {
         log.info("식당 등록 시작 - name: {}", request.getName());
@@ -176,7 +183,7 @@ public class RestaurantServiceImpl implements RestaurantService {
         restaurant.setType(request.getType());
         restaurant.setCategory(request.getCategory());
         restaurant.setAddress(request.getAddress());
-        restaurant.setLocation(request.getLocation());
+        restaurant.setLocation(toGeoJsonPoint(request.getLocation()));
         restaurant.setMenu(request.getMenu());
         restaurant.setActive(true); // 기본값은 활성 상태
 
@@ -194,6 +201,15 @@ public class RestaurantServiceImpl implements RestaurantService {
         return saved;
     }
 
+    private GeoJsonPoint toGeoJsonPoint(com.devops3sogang.backend.dto.GeoJsonPointDTO dto) {
+        if (dto == null || dto.getCoordinates() == null || dto.getCoordinates().length != 2) {
+            return null;
+        }
+        double lng = dto.getCoordinates()[0]; // 경도
+        double lat = dto.getCoordinates()[1]; // 위도
+        return new GeoJsonPoint(lng, lat);    // (lng, lat) 순서 중요!
+    }
+
     @Override
     public Restaurant update(String restaurantId, RestaurantRequest request) {
         log.info("식당 정보 수정 시작 - restaurantId: {}", restaurantId);
@@ -206,7 +222,7 @@ public class RestaurantServiceImpl implements RestaurantService {
         restaurant.setType(request.getType());
         restaurant.setCategory(request.getCategory());
         restaurant.setAddress(request.getAddress());
-        restaurant.setLocation(request.getLocation());
+        restaurant.setLocation(toGeoJsonPoint(request.getLocation()));
         restaurant.setMenu(request.getMenu());
 
         if (request.getImageUrl() != null) {
@@ -238,7 +254,7 @@ public class RestaurantServiceImpl implements RestaurantService {
             // 3. 리뷰들의 ID 목록을 추출
             List<String> reviewIdsToDelete = reviewsToDelete.stream()
                     .map(Review::getId)
-                    .collect(Collectors.toList());
+                    .toList();
 
             log.debug("리뷰 ID 목록 추출 완료 - {}개", reviewIdsToDelete.size());
 

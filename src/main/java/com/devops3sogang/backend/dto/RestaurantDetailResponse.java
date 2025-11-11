@@ -1,6 +1,5 @@
 package com.devops3sogang.backend.dto;
 
-import com.devops3sogang.backend.document.GeoJsonPoint;
 import com.devops3sogang.backend.document.MenuItem;
 import com.devops3sogang.backend.document.RestaurantStats;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -37,7 +36,7 @@ public class RestaurantDetailResponse {
     private String address;
 
     @Schema(description = "위치 정보")
-    private GeoJsonPoint location;
+    private GeoJsonPointDTO location;
 
     @Schema(description = "식당 이미지 URL", example = "https://example.com/kimbap.jpg")
     private String imageUrl;

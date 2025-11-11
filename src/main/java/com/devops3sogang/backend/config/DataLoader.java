@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -70,9 +71,7 @@ public class DataLoader implements CommandLineRunner {
         restaurant.setAddress("서울시 마포구 백범로 35");
 
         // 위치 설정 (서강대 근처 좌표)
-        GeoJsonPoint location = new GeoJsonPoint();
-        location.setCoordinates(new double[] { 126.9370, 37.5509 });
-        restaurant.setLocation(location);
+        restaurant.setLocation(new GeoJsonPoint(126.9370, 37.5509));
 
         restaurant.setImageUrl("https://example.com/images/kimchi-restaurant.jpg");
         restaurant.setActive(true);
@@ -112,9 +111,7 @@ public class DataLoader implements CommandLineRunner {
         restaurant.setAddress("서울시 마포구 신수동 1-1");
 
         // 위치 설정 (서강대 근처 좌표)
-        GeoJsonPoint location = new GeoJsonPoint();
-        location.setCoordinates(new double[] { 126.9390, 37.5515 });
-        restaurant.setLocation(location);
+        restaurant.setLocation(new GeoJsonPoint(126.9390, 37.5515));
 
         restaurant.setImageUrl("https://example.com/images/tonkatsu-restaurant.jpg");
         restaurant.setActive(true);
@@ -262,6 +259,10 @@ public class DataLoader implements CommandLineRunner {
 
     private void updateRestaurantStats(Restaurant restaurant, List<Review> reviews) {
         RestaurantStats stats = restaurant.getStats();
+        if (stats == null) {
+            stats = new RestaurantStats();
+            restaurant.setStats(stats);
+        }
         stats.setReviewCount(reviews.size());
 
         // 평균 평점 계산 (restaurantRating의 평균)

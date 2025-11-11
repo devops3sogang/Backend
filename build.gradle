@@ -29,6 +29,11 @@ tasks.withType(JavaCompile).configureEach {
 	options.compilerArgs += '-parameters'
 }
 
+tasks.withType(Test) {
+    systemProperty "file.encoding", "UTF-8"
+    jvmArgs "-Dfile.encoding=UTF-8"
+}
+
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
 	implementation 'org.springframework.boot:spring-boot-starter-web'

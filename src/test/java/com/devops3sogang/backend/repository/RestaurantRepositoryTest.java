@@ -1,6 +1,5 @@
 package com.devops3sogang.backend.repository;
 
-import com.devops3sogang.backend.document.GeoJsonPoint;
 import com.devops3sogang.backend.document.Restaurant;
 import com.devops3sogang.backend.document.RestaurantStats;
 import org.junit.jupiter.api.BeforeEach;
@@ -8,6 +7,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
+import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -191,7 +191,7 @@ class RestaurantRepositoryTest {
 
     // Helper
     private Restaurant createRestaurant(String name, double rating, String type,
-                                       String category, boolean isActive) {
+                                        String category, boolean isActive) {
         Restaurant restaurant = new Restaurant();
         restaurant.setName(name);
         restaurant.setType(type);
@@ -199,9 +199,7 @@ class RestaurantRepositoryTest {
         restaurant.setAddress("테스트 주소");
         restaurant.setActive(isActive);
 
-        GeoJsonPoint location = new GeoJsonPoint();
-        location.setCoordinates(new double[]{126.9410, 37.5515});
-        restaurant.setLocation(location);
+        restaurant.setLocation(new GeoJsonPoint(126.9410, 37.5515));
 
         RestaurantStats stats = new RestaurantStats();
         stats.setRating(rating);
