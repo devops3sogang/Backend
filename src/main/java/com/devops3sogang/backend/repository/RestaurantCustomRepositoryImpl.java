@@ -20,36 +20,69 @@ public class RestaurantCustomRepositoryImpl implements RestaurantCustomRepositor
     private final MongoTemplate mongoTemplate;
     
     @Override
-    public List<Restaurant> findByDistance(
-            double latitude, double longitude, double maxDistanceInMeters,
-            String type, String category) {
-        
-        List<AggregationOperation> operations = new ArrayList<>();
-        
-        // 1. 거리 기반 필터링 및 정렬
-        operations.add(Aggregation.geoNear(
-            NearQuery.near(longitude, latitude)
-                    .maxDistance(maxDistanceInMeters / 1000.0, Metrics.KILOMETERS)
-                    .spherical(true),
-            "distance"
-        ));
-        
-        // 2. 활성 상태 필터
-        operations.add(Aggregation.match(Criteria.where("isActive").is(true)));
-        
-        // 3. 타입 필터 (옵션)
-        if (type != null && !type.isEmpty()) {
-            operations.add(Aggregation.match(Criteria.where("type").is(type)));
+    public List<Restaurant> search(RestaurantSearchRequest req) {
+
+        String category = req.getCategory();
+        Integer radius = req.getRadius();
+        SortBy sortBy = req.getSortBy() != null ? req.getSortBy() : SortBy.NONE;
+
+        boolean hasCategory = category != null && !category.isBlank();
+        boolean hasRadius = radius != null && radius > 0;
+
+        // 좌표 유효성 체크
+        if ((sortBy == SortBy.DISTANCE || hasRadius)
+            && (req.getLatitude() == null || req.getLongitude() == null)) {
+            throw new IllegalArgumentException("위도/경도는 거리 기반 탐색에 필요합니다.");
         }
-        
-        // 4. 카테고리 필터 (옵션)
-        if (category != null && !category.isEmpty()) {
-            operations.add(Aggregation.match(Criteria.where("category").is(category)));
+
+        if (hasRadius) {
+
+            List<Restaurant> result = restaurantRepository.findByDistance(
+                req.getLatitude(),
+                req.getLongitude(),
+                radius,
+                category
+            );
+
+            if (sortBy == SortBy.RATING) {
+                result.sort(
+                    Comparator.comparingDouble(
+                        r -> r.getStats() != null && r.getStats().getRating() != null
+                            ? r.getStats().getRating()
+                            : 0.0
+                    ).reversed()
+                );
+            }
+
+            return result;
         }
-        
-        Aggregation aggregation = Aggregation.newAggregation(operations);
-        
-        return mongoTemplate.aggregate(aggregation, "restaurants", Restaurant.class)
-                .getMappedResults();
+
+        if (sortBy == SortBy.RATING) {
+            if (hasCategory) {
+                return restaurantRepository
+                    .findByCategoryAndIsActiveTrueOrderByStats_RatingDesc(category);
+            } else {
+                return restaurantRepository
+                    .findByIsActiveTrueOrderByStats_RatingDesc();
+            }
+        }
+
+        if (sortBy == SortBy.DISTANCE) {
+            return restaurantRepository.findByDistance(
+                req.getLatitude(),
+                req.getLongitude(),
+                null,  // unlimited
+                category
+            );
+        }
+
+        List<Restaurant> result;
+        if (hasCategory) {
+            result = restaurantRepository.findByCategoryAndIsActiveTrue(category);
+        } else {
+            result = restaurantRepository.findByIsActiveTrue();
+        }
+
+        return result;
     }
 }
