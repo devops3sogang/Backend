@@ -10,12 +10,16 @@ import com.devops3sogang.backend.exception.RestaurantNotFoundException;
 import com.devops3sogang.backend.repository.LikeRepository;
 import com.devops3sogang.backend.repository.RestaurantRepository;
 import com.devops3sogang.backend.repository.ReviewRepository;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
-import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,55 +33,18 @@ public class RestaurantServiceImpl implements RestaurantService {
     private final LikeRepository likeRepository;
 
     @Override
-    public List<Restaurant> findRestaurants(String type, String category, Double latitude, Double longitude, Integer radius, String sortBy) {
-        log.info("식당 목록 조회 시작 - type: {}, category: {}, lat: {}, lng: {}, radius: {}, sortBy: {}", type, category, latitude, longitude, radius, sortBy);
+    public List<Restaurant> findRestaurants(RestaurantSearchRequest request) {
+        log.info("식당 검색 요청 - lat: {}, lng: {}, category: {}, radius: {}, sortBy: {}",
+            request.getLatitude(),
+            request.getLongitude(),
+            request.getCategory(),
+            request.getRadius(),
+            request.getSortBy());
 
-        List<Restaurant> restaurants;
-
-        // 거리 기반 검색인 경우
-        if (latitude != null && longitude != null) {
-            log.debug("거리 기반 조회 실행");
-            double maxDistance = (radius != null) ? radius.doubleValue() : 1000.0; // 기본값 1km
-            restaurants = restaurantRepository.findByDistance(latitude, longitude, maxDistance, type, category);
-            log.info("거리 기반 식당 조회 완료 - 반경 {}m, 결과: {} 개", maxDistance, restaurants.size());
+        List<Restaurant> restaurants = restaurantRepository.search(request);
         
-            // 거리 기반 검색 시 평점순 정렬이 요청되면 메모리에서 정렬
-            if ("rating".equalsIgnoreCase(sortBy)) {
-                log.debug("평점순 정렬 적용");
-                restaurants = restaurants.stream()
-                    .sorted((r1, r2) -> {
-                        double rating1 = r1.getStats() != null ? r1.getStats().getRating() : 0.0;
-                        double rating2 = r2.getStats() != null ? r2.getStats().getRating() : 0.0;
-                        return Double.compare(rating2, rating1); // 내림차순
-                    })
-                    .toList();
-            }
-        } else {
-            if ("rating".equalsIgnoreCase(sortBy)) {
-                log.debug("평점순 정렬 조회");
-                if (StringUtils.hasText(type) && StringUtils.hasText(category)) {
-                    restaurants = restaurantRepository.findByTypeAndCategoryAndIsActiveTrueOrderByStats_RatingDesc(type, category);
-                } else if (StringUtils.hasText(type)) {
-                    restaurants = restaurantRepository.findByTypeAndIsActiveTrueOrderByStats_RatingDesc(type);
-                } else if (StringUtils.hasText(category)) {
-                    restaurants = restaurantRepository.findByCategoryAndIsActiveTrueOrderByStats_RatingDesc(category);
-                } else {
-                    restaurants = restaurantRepository.findByIsActiveTrueOrderByStats_RatingDesc();
-                }
-            } else {
-                log.debug("기본 정렬로 조회");
-                if (StringUtils.hasText(type) && StringUtils.hasText(category)) {
-                    restaurants = restaurantRepository.findByTypeAndCategoryAndIsActiveTrue(type, category);
-                } else if (StringUtils.hasText(type)) {
-                    restaurants = restaurantRepository.findByTypeAndIsActiveTrue(type);
-                } else if (StringUtils.hasText(category)) {
-                    restaurants = restaurantRepository.findByCategoryAndIsActiveTrue(category);
-                } else {
-                    restaurants = restaurantRepository.findByIsActiveTrue();
-                }
-            }
-            log.info("식당 조회 완료 - 결과: {} 개", restaurants.size());
-        }
+        log.info("식당 검색 완료 - 결과: {} 개", restaurants.size());
+        
         return restaurants;
     }
 
