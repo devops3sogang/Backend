@@ -28,7 +28,7 @@ public class RestaurantController {
 
     /**
      * 맛집 목록 조회 (필터링 및 거리 기반 검색 가능)
-     * GET /restaurants?type=OFF_CAMPUS&category=한식&lat=37.123&lng=127.123&radius=500&sortby=DISTANCE
+     * GET /restaurants?type=OFF_CAMPUS&category=한식&lat=37.123&lng=127.123&radius=500&sortby=NONE
      */
     @GetMapping
     public ResponseEntity<List<Restaurant>> getRestaurants(
@@ -37,7 +37,7 @@ public class RestaurantController {
             @RequestParam(name = "lat") Double latitude,
             @RequestParam(name = "lng") Double longitude,
             @RequestParam(name = "radius", required = false) Integer radius,
-            @RequestParam(name = "sortBy", required = false, defaultValue = "DISTANCE") String sortByStr) {
+            @RequestParam(name = "sortBy", required = false, defaultValue = "NONE") String sortByStr) {
 
         SortBy sortBy;
         try {
