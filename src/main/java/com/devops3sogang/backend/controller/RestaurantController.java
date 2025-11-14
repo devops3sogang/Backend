@@ -2,7 +2,9 @@ package com.devops3sogang.backend.controller;
 
 import com.devops3sogang.backend.document.Restaurant;
 import com.devops3sogang.backend.document.Review;
+import com.devops3sogang.backend.document.SortBy;
 import com.devops3sogang.backend.dto.RestaurantDetailResponse;
+import com.devops3sogang.backend.dto.RestaurantSearchRequest;
 import com.devops3sogang.backend.dto.ReviewRequest;
 import com.devops3sogang.backend.service.RestaurantService;
 import com.devops3sogang.backend.service.ReviewService;
@@ -26,22 +28,35 @@ public class RestaurantController {
 
     /**
      * 맛집 목록 조회 (필터링 및 거리 기반 검색 가능)
-     * GET /restaurants?type=OFF_CAMPUS&category=한식&lat=37.123&lng=127.123&radius=500
+     * GET /restaurants?type=OFF_CAMPUS&category=한식&lat=37.123&lng=127.123&radius=500&sortby=DISTANCE
      */
     @GetMapping
     public ResponseEntity<List<Restaurant>> getRestaurants(
             @RequestParam(name = "type", required = false) String type,
             @RequestParam(name = "category", required = false) String category,
-            @RequestParam(name = "lat", required = false) Double latitude,
-            @RequestParam(name = "lng", required = false) Double longitude,
+            @RequestParam(name = "lat") Double latitude,
+            @RequestParam(name = "lng") Double longitude,
             @RequestParam(name = "radius", required = false) Integer radius,
-            @RequestParam(name = "sortBy", required = false, defaultValue = "distance") String sortBy) {
-        // lat, lng는 둘 다 제공되거나 둘 다 제공되지 않아야 함
-        if ((latitude == null) != (longitude == null)) {
-            return ResponseEntity.badRequest().build();
+            @RequestParam(name = "sortBy", required = false, defaultValue = "DISTANCE") String sortByStr) {
+
+        SortBy sortBy;
+        try {
+            sortBy = SortBy.valueOf(sortByStr.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            sortBy = SortBy.NONE; // 기본값 처리
         }
 
-        List<Restaurant> restaurants = restaurantService.findRestaurants(type, category, latitude, longitude, radius, sortBy);
+        // DTO 생성
+        RestaurantSearchRequest request = new RestaurantSearchRequest();
+        request.setType(type);
+        request.setCategory(category);
+        request.setLatitude(latitude);
+        request.setLongitude(longitude);
+        request.setRadius(radius);
+        request.setSortBy(sortBy);
+
+        List<Restaurant> restaurants = restaurantService.findRestaurants(request);
+
         return ResponseEntity.ok(restaurants);
     }
 
