@@ -85,7 +85,7 @@ class RestaurantServiceTest {
 
         // When
         List<Restaurant> results = restaurantService.findRestaurants(
-            null, null, null, null, null, "rating");
+            null);
 
         // Then
         assertThat(results).hasSize(3);
@@ -105,7 +105,7 @@ class RestaurantServiceTest {
 
         // When
         List<Restaurant> results = restaurantService.findRestaurants(
-            null, "한식", null, null, null, "rating");
+            null);
 
         // Then
         assertThat(results).hasSize(2);
@@ -127,7 +127,7 @@ class RestaurantServiceTest {
 
         // When
         List<Restaurant> results = restaurantService.findRestaurants(
-            null, null, baseLat, baseLng, 1000, "distance");
+            null);
 
         // Then
         assertThat(results).hasSize(3);
@@ -150,7 +150,7 @@ class RestaurantServiceTest {
 
         // When
         List<Restaurant> results = restaurantService.findRestaurants(
-            null, null, baseLat, baseLng, 1000, "rating");
+            null);
 
         // Then
         assertThat(results).hasSize(3);
