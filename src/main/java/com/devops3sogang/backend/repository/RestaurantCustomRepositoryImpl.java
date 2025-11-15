@@ -52,9 +52,7 @@ public class RestaurantCustomRepositoryImpl implements RestaurantCustomRepositor
             if (sortBy == SortBy.RATING) {
                 result.sort(
                     Comparator.comparingDouble(
-                        r -> r.getStats() != null && r.getStats().getRating() != null
-                            ? r.getStats().getRating()
-                            : 0.0
+                        r -> r.getStats() != null ? r.getStats().getRating() : 0.0
                     ).reversed()
                 );
             }
