@@ -117,7 +117,7 @@ public class RestaurantCustomRepositoryImpl implements RestaurantCustomRepositor
         
         return results.getContent()
                      .stream()
-                     .map(result -> result.getContent())
+                     .map(geoResult -> geoResult.getContent())
                      .collect(Collectors.toList());
     }
 }
