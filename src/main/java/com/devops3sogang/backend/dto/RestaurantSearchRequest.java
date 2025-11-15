@@ -17,10 +17,14 @@ public class RestaurantSearchRequest {
   private Double longitude;
 
   //optional
+  @Schema(description = "식당 유형")
+  private String type;
   @Schema(description = "카테고리 필터")
   private String category;
   @Schema(description = "거리 필터 (단위:m)")
   private Integer radius;
   @Schema(description = "정렬 기준 (NONE/DISTANCE/RATING)")
   private SortBy sortBy;
+
+  public void setType(String type) { this.type = type; }
 }
