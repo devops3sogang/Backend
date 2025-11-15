@@ -6,6 +6,7 @@ import com.devops3sogang.backend.document.Review;
 import com.devops3sogang.backend.document.SortBy;
 import com.devops3sogang.backend.dto.RestaurantDetailResponse;
 import com.devops3sogang.backend.dto.RestaurantRequest;
+import com.devops3sogang.backend.dto.RestaurantSearchRequest;
 import com.devops3sogang.backend.exception.DuplicateRestaurantException;
 import com.devops3sogang.backend.exception.RestaurantNotFoundException;
 import com.devops3sogang.backend.repository.LikeRepository;

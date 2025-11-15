@@ -1,6 +1,7 @@
 package com.devops3sogang.backend.repository;
 
 import com.devops3sogang.backend.document.Restaurant;
+import com.devops3sogang.backend.dto.RestaurantSearchRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
