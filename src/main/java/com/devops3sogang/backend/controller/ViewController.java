@@ -25,7 +25,8 @@ public class ViewController {
     @GetMapping("/restaurants-view")
     public String showRestaurantsPage(Model model) {
         // 1. 서비스에서 모든 맛집 목록을 가져옵니다.
-        List<Restaurant> restaurantList = restaurantService.findRestaurants(null, null, null, null, null, "distance");
+        RestaurantSearchRequest req = new RestaurantSearchRequest();
+        List<Restaurant> restaurantList = restaurantService.findRestaurants(req);
 
         // 2. 모델(Model)에 "restaurants"라는 이름으로 맛집 목록 데이터를 추가합니다.
         model.addAttribute("restaurants", restaurantList);
