@@ -1,27 +1,29 @@
 package com.devops3sogang.backend.repository;
 
-import com.devops3sogang.backend.document.SortBy;
 import com.devops3sogang.backend.document.Restaurant;
+import com.devops3sogang.backend.document.SortBy;
 import com.devops3sogang.backend.dto.RestaurantSearchRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.aggregation.Aggregation;
-import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
 import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.NearQuery;
+import org.springframework.data.geo.Distance;
+import org.springframework.data.geo.GeoResults;
+import org.springframework.data.geo.Point;
 import org.springframework.data.geo.Metrics;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
 public class RestaurantCustomRepositoryImpl implements RestaurantCustomRepository {
     
     private final MongoTemplate mongoTemplate;
-    private final RestaurantRepository restaurantRepository;
+    //private final RestaurantRepository restaurantRepository;
     
     @Override
     public List<Restaurant> search(RestaurantSearchRequest req) {
@@ -40,8 +42,7 @@ public class RestaurantCustomRepositoryImpl implements RestaurantCustomRepositor
         }
 
         if (hasRadius) {
-
-            List<Restaurant> result = restaurantRepository.findByDistance(
+            List<Restaurant> result = findByDistance(
                 req.getLatitude(),
                 req.getLongitude(),
                 radius,
@@ -62,17 +63,21 @@ public class RestaurantCustomRepositoryImpl implements RestaurantCustomRepositor
         }
 
         if (sortBy == SortBy.RATING) {
+            Query query = new Query(Criteria.where("isActive").is(true));
+
             if (hasCategory) {
-                return restaurantRepository
-                    .findByCategoryAndIsActiveTrueOrderByStats_RatingDesc(category);
-            } else {
-                return restaurantRepository
-                    .findByIsActiveTrueOrderByStats_RatingDesc();
+                query.addCriteria(Criteria.where("category").is(category));
             }
+
+            query.with(org.springframework.data.domain.Sort.by(
+                org.springframework.data.domain.Sort.Direction.DESC, "stats.rating"
+            ));
+
+            return mongoTemplate.find(query, Restaurant.class);
         }
 
         if (sortBy == SortBy.DISTANCE) {
-            return restaurantRepository.findByDistance(
+            return findByDistance(
                 req.getLatitude(),
                 req.getLongitude(),
                 null,  // unlimited
@@ -80,13 +85,41 @@ public class RestaurantCustomRepositoryImpl implements RestaurantCustomRepositor
             );
         }
 
-        List<Restaurant> result;
+        Query query = new Query(Criteria.where("isActive").is(true));
+
         if (hasCategory) {
-            result = restaurantRepository.findByCategoryAndIsActiveTrue(category);
-        } else {
-            result = restaurantRepository.findByIsActiveTrue();
+            query.addCriteria(Criteria.where("category").is(category));
         }
 
-        return result;
+        return mongoTemplate.find(query, Restaurant.class);
+    }
+
+    private List<Restaurant> findByDistance(Double latitude, Double longitude, Integer radiusInMeters, String category) {
+        Point location = new Point(longitude, latitude);  // GeoJSON: 경도, 위도 순서
+        
+        NearQuery nearQuery = NearQuery.near(location);
+        
+        // 거리 제한
+        if (radiusInMeters != null && radiusInMeters > 0) {
+            nearQuery.maxDistance(new Distance(radiusInMeters / 1000.0, Metrics.KILOMETERS));
+        }
+        
+        // 기본 조건: isActive = true
+        Criteria criteria = Criteria.where("isActive").is(true);
+        
+        // 카테고리 필터
+        if (category != null && !category.isBlank()) {
+            criteria.and("category").is(category);
+        }
+        
+        nearQuery.query(Query.query(criteria));
+        
+        // 거리순으로 정렬되어 반환됨
+        GeoResults<Restaurant> results = mongoTemplate.geoNear(nearQuery, Restaurant.class);
+        
+        return results.getContent()
+                     .stream()
+                     .map(result -> result.getContent())
+                     .collect(Collectors.toList());
     }
 }
