@@ -3,6 +3,7 @@ package com.devops3sogang.backend.service;
 import com.devops3sogang.backend.document.Restaurant;
 import com.devops3sogang.backend.document.RestaurantStats;
 import com.devops3sogang.backend.document.Review;
+import com.devops3sogang.backend.document.SortBy;
 import com.devops3sogang.backend.dto.RestaurantDetailResponse;
 import com.devops3sogang.backend.dto.RestaurantRequest;
 import com.devops3sogang.backend.exception.DuplicateRestaurantException;
@@ -15,7 +16,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

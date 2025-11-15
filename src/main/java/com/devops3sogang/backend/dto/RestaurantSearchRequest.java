@@ -1,6 +1,6 @@
 package com.devops3sogang.backend.dto;
 
-import io.swagger.v3.oas.annotation.media.Schema;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
