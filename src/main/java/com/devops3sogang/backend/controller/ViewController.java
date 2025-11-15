@@ -1,6 +1,7 @@
 package com.devops3sogang.backend.controller;
 
 import com.devops3sogang.backend.document.Restaurant;
+import com.devops3sogang.backend.dto.RestaurantSearchRequest;
 import com.devops3sogang.backend.service.RestaurantService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
