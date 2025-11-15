@@ -1,5 +1,6 @@
 package com.devops3sogang.backend.repository;
 
+import com.devops3sogang.backend.document.SortBy;
 import com.devops3sogang.backend.document.Restaurant;
 import com.devops3sogang.backend.dto.RestaurantSearchRequest;
 import lombok.RequiredArgsConstructor;
@@ -13,12 +14,14 @@ import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Comparator;
 
 @Repository
 @RequiredArgsConstructor
 public class RestaurantCustomRepositoryImpl implements RestaurantCustomRepository {
     
     private final MongoTemplate mongoTemplate;
+    private final RestaurantRepository restaurantRepository;
     
     @Override
     public List<Restaurant> search(RestaurantSearchRequest req) {
