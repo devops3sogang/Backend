@@ -52,7 +52,7 @@ public class RestaurantCustomRepositoryImpl implements RestaurantCustomRepositor
             if (sortBy == SortBy.RATING) {
                 result.sort(
                     Comparator.comparingDouble(
-                        r -> r.getStats() != null ? r.getStats().getRating() : 0.0
+                        (Restaurant r) -> r.getStats() != null ? r.getStats().getRating() : 0.0
                     ).reversed()
                 );
             }
@@ -117,7 +117,7 @@ public class RestaurantCustomRepositoryImpl implements RestaurantCustomRepositor
         
         return results.getContent()
                      .stream()
-                     .map(geoResult -> geoResult.getContent())
+                     .map(geoResult -> (Restaurant) geoResult.getContent())
                      .collect(Collectors.toList());
     }
 }
