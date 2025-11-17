@@ -59,7 +59,7 @@ public class DataLoader implements CommandLineRunner {
         user.setEmail("test@sogang.ac.kr");
         user.setPasswordHash(passwordEncoder.encode("password123"));
         user.setNickname("테스트유저");
-        user.setRole("USER");
+        user.setRole(Role.USER);
         user.setCreatedAt(LocalDateTime.now());
         user.setUpdatedAt(LocalDateTime.now());
         return userRepository.save(user);
@@ -71,7 +71,7 @@ public class DataLoader implements CommandLineRunner {
         admin.setEmail("admin@sogang.ac.kr");
         admin.setPasswordHash(passwordEncoder.encode("admin1234"));
         admin.setNickname("관리자");
-        admin.setRole("ADMIN");
+        admin.setRole(Role.ADMIN);
         admin.setCreatedAt(LocalDateTime.now());
         admin.setUpdatedAt(LocalDateTime.now());
         return userRepository.save(admin);

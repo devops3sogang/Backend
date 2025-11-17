@@ -2,6 +2,7 @@ package com.devops3sogang.backend.dto;
 
 import com.devops3sogang.backend.document.Review;
 import com.devops3sogang.backend.document.User;
+import com.devops3sogang.backend.document.Role;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
@@ -25,7 +26,7 @@ public class UserProfileResponse {
     private String nickname;
 
     @Schema(description = "사용자 권한")
-    private String role;
+    private Role role;
 
     @Schema(description = "계정 생성일")
     private String createdAt;

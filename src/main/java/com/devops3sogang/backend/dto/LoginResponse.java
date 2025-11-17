@@ -1,5 +1,6 @@
 package com.devops3sogang.backend.dto;
 
+import com.devops3sogang.backend.document.Role;
 import lombok.Data;
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -24,6 +25,6 @@ public class LoginResponse {
         private String _id;
         private String email;
         private String nickname;
-        private String role;
+        private Role role;
     }
 }

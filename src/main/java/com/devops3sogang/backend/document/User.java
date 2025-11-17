@@ -15,13 +15,13 @@ import java.util.Collections;
 
 @Data
 @Document(collection = "users")
-public class User implements UserDetails { // UserDetails 구현
+public class User implements UserDetails {
     @Id
     private String id;
     private String email;
     private String passwordHash;
     private String nickname;
-    private String role; // 예: "USER", "ADMIN"
+    private Role role = Role.USER; // 기본값: USER (ADMIN 수동 승격)
     @CreatedDate
     private LocalDateTime createdAt;
     @LastModifiedDate

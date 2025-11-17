@@ -2,6 +2,7 @@ package com.devops3sogang.backend.service;
 
 import com.devops3sogang.backend.config.jwt.JwtUtil;
 import com.devops3sogang.backend.document.User;
+import com.devops3sogang.backend.document.Role;
 import com.devops3sogang.backend.dto.LoginRequest;
 import com.devops3sogang.backend.dto.LoginResponse;
 import com.devops3sogang.backend.dto.RegisterRequest;
@@ -35,18 +36,18 @@ public class AuthServiceImpl implements AuthService {
         user.setEmail(request.getEmail());
         user.setNickname(request.getNickname());
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
-        user.setRole("USER");
         
         User saved = userRepository.save(user);
         
         log.info("회원가입 완료 - userId: {}, email: {}", saved.getId(), saved.getEmail());
         
         RegisterResponse response = new RegisterResponse();
-        response.setId(saved.getId());
+        response.set_id(saved.getId());
         response.setEmail(saved.getEmail());
         response.setNickname(saved.getNickname());
+        response.setRole(saved.getRole());
         response.setCreatedAt(saved.getCreatedAt());
-        response.setMessage("회원가입이 완료되었습니다.");
+        response.setUpdatedAt(saved.getUpdatedAt());
 
         return response;
     }
@@ -82,7 +83,7 @@ public class AuthServiceImpl implements AuthService {
         userInfo.setRole(user.getRole());
 
         response.setUser(userInfo);
-        
+
         return response;
     }
 }
