@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 public class RegisterResponse {
 
     @Schema(description = "사용자 ID", example = "12")
-    private Long id;
+    private String id;
 
     @Schema(description = "등록된 사용자 이메일", example = "testuser1@sogang.ac.kr")
     private String email;

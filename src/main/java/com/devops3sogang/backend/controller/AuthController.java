@@ -1,7 +1,9 @@
 package com.devops3sogang.backend.controller;
 
 import com.devops3sogang.backend.dto.LoginRequest;
+import com.devops3sogang.backend.dto.LoginResponse;
 import com.devops3sogang.backend.dto.RegisterRequest;
+import com.devops3sogang.backend.dto.RegisterResponse;
 import com.devops3sogang.backend.service.AuthService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;

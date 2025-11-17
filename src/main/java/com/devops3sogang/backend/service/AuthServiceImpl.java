@@ -3,7 +3,9 @@ package com.devops3sogang.backend.service;
 import com.devops3sogang.backend.config.jwt.JwtUtil;
 import com.devops3sogang.backend.document.User;
 import com.devops3sogang.backend.dto.LoginRequest;
+import com.devops3sogang.backend.dto.LoginResponse;
 import com.devops3sogang.backend.dto.RegisterRequest;
+import com.devops3sogang.backend.dto.RegisterResponse;
 import com.devops3sogang.backend.exception.DuplicateEmailException;
 import com.devops3sogang.backend.exception.InvalidCredentialsException;
 import com.devops3sogang.backend.repository.UserRepository;
@@ -75,6 +77,6 @@ public class AuthServiceImpl implements AuthService {
         response.setNickname(user.getNickname());
         response.setExpiresAt(expiresAt);
 
-        return token;
+        return response;
     }
 }
