@@ -21,7 +21,7 @@ public class AuthServiceImpl implements AuthService {
     private final JwtUtil jwtUtil;
 
     @Override
-    public User register(RegisterRequest request) {
+    public RegisterResponse register(RegisterRequest request) {
         log.info("회원가입 시작 - email: {}", request.getEmail());
         
         if (userRepository.existsByEmail(request.getEmail())) {
@@ -34,16 +34,23 @@ public class AuthServiceImpl implements AuthService {
         user.setNickname(request.getNickname());
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         user.setRole("USER");
-        // createdAt, updatedAt은 @CreatedDate, @LastModifiedDate로 자동 설정됨
         
         User saved = userRepository.save(user);
+        
         log.info("회원가입 완료 - userId: {}, email: {}", saved.getId(), saved.getEmail());
         
-        return saved;
+        RegisterResponse response = new RegisterResponse();
+        response.setId(saved.getId());
+        response.setEmail(saved.getEmail());
+        response.setNickname(saved.getNickname());
+        response.setCreatedAt(saved.getCreatedAt());
+        response.setMessage("회원가입이 완료되었습니다.");
+
+        return response;
     }
 
     @Override
-    public String login(LoginRequest request) {
+    public LoginResponse login(LoginRequest request) {
         log.info("로그인 시도 - email: {}", request.getEmail());
         
         User user = userRepository.findByEmail(request.getEmail())
@@ -58,8 +65,16 @@ public class AuthServiceImpl implements AuthService {
         }
         
         String token = jwtUtil.createToken(user.getEmail());
+        Long expiresAt = jwtUtil.getExpirationTimeMillis(token);
+
         log.info("로그인 성공 - email: {}", request.getEmail());
         
+        LoginResponse response = new LoginResponse();
+        response.setToken(token);
+        response.setEmail(user.getEmail());
+        response.setNickname(user.getNickname());
+        response.setExpiresAt(expiresAt);
+
         return token;
     }
 }
