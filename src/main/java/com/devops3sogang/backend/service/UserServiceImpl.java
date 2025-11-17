@@ -5,6 +5,7 @@ import com.devops3sogang.backend.document.Review;
 import com.devops3sogang.backend.document.User;
 import com.devops3sogang.backend.dto.UserProfileResponse;
 import com.devops3sogang.backend.dto.UserUpdateRequest;
+import com.devops3sogang.backend.dto.UserUpdateResponse;
 import com.devops3sogang.backend.exception.UserNotFoundException;
 import com.devops3sogang.backend.repository.LikeRepository;
 import com.devops3sogang.backend.repository.ReviewRepository;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -64,7 +66,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void updateUserProfile(String email, UserUpdateRequest request) {
+    public User updateUserProfile(String email, UserUpdateRequest request) {
         log.info("프로필 수정 시작 - email: {}", email);
         
         User user = userRepository.findByEmail(email)
@@ -100,8 +102,11 @@ public class UserServiceImpl implements UserService {
             log.info("비밀번호 변경 완료 - email: {}", email);
         }
 
+        user.setUpdatedAt(LocalDateTime.now());
         userRepository.save(user);
         log.info("프로필 수정 완료 - email: {}", email);
+
+        return user;
     }
 
     @Override

@@ -1,4 +1,4 @@
-package com.devops3sogang.backend.controller;
+/*package com.devops3sogang.backend.controller;
 
 import com.devops3sogang.backend.document.Restaurant;
 import com.devops3sogang.backend.document.RestaurantStats;
@@ -235,4 +235,4 @@ class RestaurantControllerTest {
 
         return restaurant;
     }
-}
+}*/

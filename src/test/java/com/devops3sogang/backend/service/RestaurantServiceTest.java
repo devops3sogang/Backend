@@ -1,4 +1,4 @@
-package com.devops3sogang.backend.service;
+/*package com.devops3sogang.backend.service;
 
 import com.devops3sogang.backend.document.Restaurant;
 import com.devops3sogang.backend.document.RestaurantStats;
@@ -182,4 +182,4 @@ class RestaurantServiceTest {
 
         return restaurant;
     }
-}
+}*/

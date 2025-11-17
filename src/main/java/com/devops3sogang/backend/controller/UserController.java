@@ -1,7 +1,9 @@
 package com.devops3sogang.backend.controller;
 
+import com.devops3sogang.backend.document.User;
 import com.devops3sogang.backend.dto.UserProfileResponse;
 import com.devops3sogang.backend.dto.UserUpdateRequest;
+import com.devops3sogang.backend.dto.UserUpdateResponse;
 import com.devops3sogang.backend.service.UserService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -37,10 +39,16 @@ public class UserController {
      * PUT /users/me
      */
     @PutMapping("/me")
-    public ResponseEntity<Void> updateMyProfile(Authentication authentication, @Valid @RequestBody UserUpdateRequest request) {
+    public ResponseEntity<UserUpdateResponse> updateMyProfile(Authentication authentication, @Valid @RequestBody UserUpdateRequest request) {
         String userEmail = authentication.getName();
-        userService.updateUserProfile(userEmail, request);
-        return ResponseEntity.ok().build();
+        User updatedUser = userService.updateUserProfile(userEmail, request);
+        UserUpdateResponse response = UserUpdateResponse.from(
+            updatedUser.getId(),
+            updatedUser.getEmail(),
+            updatedUser.getNickname(),
+            updatedUser.getUpdatedAt()
+        );
+        return ResponseEntity.ok(response);
     }
 
     /**
