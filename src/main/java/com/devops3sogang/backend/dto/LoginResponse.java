@@ -1,5 +1,8 @@
 package com.devops3sogang.backend.dto;
 
+import lombok.Data;
+import io.swagger.v3.oas.annotations.media.Schema;
+
 @Data
 @Schema(description = "로그인 응답 DTO")
 public class LoginResponse {
