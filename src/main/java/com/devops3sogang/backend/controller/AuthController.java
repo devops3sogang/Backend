@@ -32,10 +32,8 @@ public class AuthController {
      * POST /auth/login
      */
     @PostMapping("/login")
-    public ResponseEntity<String> login(@Valid @RequestBody LoginRequest request) {
-        String jwtToken = authService.login(request);
-        // 실제로는 토큰을 Body에 담아 보냅니다.
-        return ResponseEntity.ok(jwtToken);
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
+        return ResponseEntity.ok(authService.login(request));
     }
 
     /**
