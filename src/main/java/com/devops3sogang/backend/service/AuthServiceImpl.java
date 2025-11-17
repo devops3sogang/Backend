@@ -73,10 +73,16 @@ public class AuthServiceImpl implements AuthService {
         
         LoginResponse response = new LoginResponse();
         response.setToken(token);
-        response.setEmail(user.getEmail());
-        response.setNickname(user.getNickname());
         response.setExpiresAt(expiresAt);
 
+        LoginResponse.UserInfo userInfo = new LoginResponse.UserInfo();
+        userInfo.set_id(user.getId());
+        userInfo.setEmail(user.getEmail());
+        userInfo.setNickname(user.getNickname());
+        userInfo.setRole(user.getRole());
+
+        response.setUser(userInfo);
+        
         return response;
     }
 }
