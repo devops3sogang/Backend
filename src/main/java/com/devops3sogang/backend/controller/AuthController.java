@@ -22,9 +22,9 @@ public class AuthController {
      * POST /auth/register
      */
     @PostMapping("/register")
-    public ResponseEntity<String> register(@Valid @RequestBody RegisterRequest request) {
-        authService.register(request);
-        return ResponseEntity.status(201).body("회원가입이 완료되었습니다.");
+    public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterRequest request) {
+        RegisterResponse response = authService.register(request);
+        return ResponseEntity.status(201).body(response);
     }
 
     /**
