@@ -57,6 +57,14 @@ public class RestaurantCustomRepositoryImpl implements RestaurantCustomRepositor
                 );
             }
 
+            if (sortBy == SortBy.POPULAR) {
+                result.sort(
+                    Comparator.comparingInt(
+                        (Restaurant r) -> r.getStats() != null ? r.getStats().getReviewCount() : 0
+                    ).reversed()
+                );
+            }
+
             return result;
         }
 
@@ -69,6 +77,20 @@ public class RestaurantCustomRepositoryImpl implements RestaurantCustomRepositor
 
             query.with(org.springframework.data.domain.Sort.by(
                 org.springframework.data.domain.Sort.Direction.DESC, "stats.rating"
+            ));
+
+            return mongoTemplate.find(query, Restaurant.class);
+        }
+
+        if (sortBy == SortBy.POPULAR) {
+            Query query = new Query(Criteria.where("inActive").is(true));
+
+            if (hasCategory) {
+                query.addCriteria(Criteria.where("category").is(category));
+            }
+
+            query.with(org.springframework.data.domain.Sort.by(
+                org.springframework.data.domain.Sort.Direction.DESC, "stats.reviewCount"
             ));
 
             return mongoTemplate.find(query, Restaurant.class);
