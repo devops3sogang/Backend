@@ -34,8 +34,8 @@ public class RestaurantController {
     public ResponseEntity<List<Restaurant>> getRestaurants(
             @RequestParam(name = "type", required = false) String type,
             @RequestParam(name = "category", required = false) String category,
-            @RequestParam(name = "lat") Double latitude,
-            @RequestParam(name = "lng") Double longitude,
+            @RequestParam(name = "lat", required = false) Double latitude, //null 아닌 400으로 직접 처리 위해 required 해제
+            @RequestParam(name = "lng", required = false) Double longitude,
             @RequestParam(name = "radius", required = false) Integer radius,
             @RequestParam(name = "sortBy", required = false, defaultValue = "NONE") String sortByStr) {
 
@@ -44,6 +44,10 @@ public class RestaurantController {
             sortBy = SortBy.valueOf(sortByStr.toUpperCase());
         } catch (IllegalArgumentException e) {
             sortBy = SortBy.NONE; // 기본값 처리
+        }
+
+        if (latitude == null || longitude == null) {
+            return ResponseEntity.badRequest().build();
         }
 
         // DTO 생성

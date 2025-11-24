@@ -10,6 +10,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.NearQuery;
 import org.springframework.data.geo.Distance;
 import org.springframework.data.geo.GeoResults;
+import org.springframework.data.geo.GeoResult;
 import org.springframework.data.geo.Point;
 import org.springframework.data.geo.Metrics;
 import org.springframework.stereotype.Repository;
@@ -83,7 +84,7 @@ public class RestaurantCustomRepositoryImpl implements RestaurantCustomRepositor
         }
 
         if (sortBy == SortBy.POPULAR) {
-            Query query = new Query(Criteria.where("inActive").is(true));
+            Query query = new Query(Criteria.where("isActive").is(true));
 
             if (hasCategory) {
                 query.addCriteria(Criteria.where("category").is(category));
@@ -117,7 +118,7 @@ public class RestaurantCustomRepositoryImpl implements RestaurantCustomRepositor
     private List<Restaurant> findByDistance(Double latitude, Double longitude, Integer radiusInMeters, String category) {
         Point location = new Point(longitude, latitude);  // GeoJSON: 경도, 위도 순서
         
-        NearQuery nearQuery = NearQuery.near(location);
+        NearQuery nearQuery = NearQuery.near(location).in(Metrics.KILOMETERS);
         
         // 거리 제한
         if (radiusInMeters != null && radiusInMeters > 0) {
@@ -137,9 +138,9 @@ public class RestaurantCustomRepositoryImpl implements RestaurantCustomRepositor
         // 거리순으로 정렬되어 반환됨
         GeoResults<Restaurant> results = mongoTemplate.geoNear(nearQuery, Restaurant.class);
         
-        return results.getContent()
-                     .stream()
-                     .map(geoResult -> (Restaurant) geoResult.getContent())
+        return results.getContent().stream()
+                     .sorted(Comparator.comparingDouble(r -> r.getDistance().getNormalizedValue()))
+                     .map(GeoResult::getContent)
                      .collect(Collectors.toList());
     }
 }

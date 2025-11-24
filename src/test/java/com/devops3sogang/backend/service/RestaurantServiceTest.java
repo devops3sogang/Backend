@@ -1,12 +1,12 @@
-/*package com.devops3sogang.backend.service;
+package com.devops3sogang.backend.service;
 
 import com.devops3sogang.backend.document.Restaurant;
 import com.devops3sogang.backend.document.RestaurantStats;
-import com.devops3sogang.backend.repository.LikeRepository;
+import com.devops3sogang.backend.document.SortBy;
+import com.devops3sogang.backend.dto.RestaurantSearchRequest;
 import com.devops3sogang.backend.repository.RestaurantRepository;
 import com.devops3sogang.backend.repository.ReviewRepository;
-import com.devops3sogang.backend.dto.RestaurantRequest;
-import com.devops3sogang.backend.exception.DuplicateRestaurantException;
+import com.devops3sogang.backend.repository.LikeRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
 class RestaurantServiceTest {
@@ -34,100 +35,55 @@ class RestaurantServiceTest {
     @Autowired
     private LikeRepository likeRepository;
 
+    private static final double BASE_LAT = 37.5500;
+    private static final double BASE_LNG = 126.9400;
+
     @BeforeEach
     void setUp() {
-        // 각 테스트 전에 데이터 초기화
         restaurantRepository.deleteAll();
         reviewRepository.deleteAll();
         likeRepository.deleteAll();
     }
 
-    @Test
-    @DisplayName("이름+주소가 동일하면 중복 식당 생성 불가(409)")
-    void createRestaurant_DuplicateNameAndAddress_ShouldThrow() {
-        // Given: 최초 1개 생성
-        RestaurantRequest req1 = new RestaurantRequest();
-        req1.setName("맛있는 김치찌개");     // 동일 이름
-        req1.setAddress("서울시 마포구 백범로 35"); // 동일 주소
-        req1.setType("OFF_CAMPUS");
-        req1.setCategory("한식");
-        // 위치/메뉴는 생성 로직에 필수는 아니면 생략 가능 (null 허용)
-        restaurantService.create(req1);
-
-        // When: 대소문자만 다르게 같은 값으로 다시 생성 시도(IgnoreCase 검증)
-        RestaurantRequest req2 = new RestaurantRequest();
-        req2.setName("맛있는 김치찌개");          // same
-        req2.setAddress("서울시 마포구 백범로 35"); // same (대소문자/공백 차이도 허용 시 여기에 변형 줘도 OK)
-        req2.setType("OFF_CAMPUS");
-        req2.setCategory("한식");
-
-        // Then: DuplicateRestaurantException 발생해야 함
-        org.junit.jupiter.api.Assertions.assertThrows(
-                DuplicateRestaurantException.class,
-                () -> restaurantService.create(req2)
-        );
-
-        // 그리고 실제로는 여전히 1개만 존재해야 함(활성 레코드 기준)
-        List<Restaurant> all = restaurantRepository.findByIsActiveTrue();
-        assertThat(all).hasSize(1);
-        assertThat(all.get(0).getName()).isEqualTo("맛있는 김치찌개");
-        assertThat(all.get(0).getAddress()).isEqualTo("서울시 마포구 백범로 35");
-    }
+    // ========== 정상 케이스 14개 ==========
 
     @Test
-    @DisplayName("평점순 정렬 - 전체 조회")
-    void sortByRating_All() {
+    @DisplayName("1. 필터X & 정렬기준X: 모든 식당 랜덤(DB 순서)")
+    void search_NoFilter_NoSort() {
         // Given
-        Restaurant r1 = createRestaurant("식당1", 4.5, "ON_CAMPUS", "한식", 37.5515, 126.9410);
-        Restaurant r2 = createRestaurant("식당2", 4.8, "ON_CAMPUS", "일식", 37.5516, 126.9411);
-        Restaurant r3 = createRestaurant("식당3", 4.2, "OFF_CAMPUS", "중식", 37.5517, 126.9412);
-        restaurantRepository.saveAll(List.of(r1, r2, r3));
+        Restaurant r1 = createRestaurant("식당1", 4.5, 10, "한식", 37.5515, 126.9410);
+        Restaurant r2 = createRestaurant("식당2", 4.8, 20, "일식", 37.5516, 126.9411);
+        restaurantRepository.saveAll(List.of(r1, r2));
+
+        RestaurantSearchRequest request = new RestaurantSearchRequest();
+        request.setLatitude(BASE_LAT);
+        request.setLongitude(BASE_LNG);
 
         // When
-        List<Restaurant> results = restaurantService.findRestaurants(
-            null);
-
-        // Then
-        assertThat(results).hasSize(3);
-        assertThat(results.get(0).getStats().getRating()).isEqualTo(4.8);
-        assertThat(results.get(1).getStats().getRating()).isEqualTo(4.5);
-        assertThat(results.get(2).getStats().getRating()).isEqualTo(4.2);
-    }
-
-    @Test
-    @DisplayName("평점순 정렬 - 카테고리 필터")
-    void sortByRating_WithCategory() {
-        // Given
-        Restaurant r1 = createRestaurant("한식1", 4.5, "ON_CAMPUS", "한식", 37.5515, 126.9410);
-        Restaurant r2 = createRestaurant("한식2", 4.8, "ON_CAMPUS", "한식", 37.5516, 126.9411);
-        Restaurant r3 = createRestaurant("일식1", 4.9, "OFF_CAMPUS", "일식", 37.5517, 126.9412);
-        restaurantRepository.saveAll(List.of(r1, r2, r3));
-
-        // When
-        List<Restaurant> results = restaurantService.findRestaurants(
-            null);
+        List<Restaurant> results = restaurantService.findRestaurants(request);
 
         // Then
         assertThat(results).hasSize(2);
-        assertThat(results.get(0).getName()).isEqualTo("한식2");
-        assertThat(results.get(1).getName()).isEqualTo("한식1");
+        assertThat(results).extracting(Restaurant::getName)
+                .containsExactlyInAnyOrder("식당1", "식당2");
     }
 
     @Test
-    @DisplayName("거리순 정렬 테스트")
-    void sortByDistance() {
-        // Given: 서강대 정문 기준
-        double baseLat = 37.5502;
-        double baseLng = 126.9410;
+    @DisplayName("2. 필터X & 거리순 정렬: 모든 식당 거리 오름차순")
+    void search_NoFilter_SortByDistance() {
+        // Given
+        Restaurant near = createRestaurant("가까운", 4.0, 10, "한식", 37.5506, 126.9400);
+        Restaurant medium = createRestaurant("중간", 4.5, 15, "일식", 37.5511, 126.9400);
+        Restaurant far = createRestaurant("먼", 4.9, 20, "중식", 37.5520, 126.9400);
+        restaurantRepository.saveAll(List.of(far, near, medium));
 
-        Restaurant r1 = createRestaurant("가까운", 4.0, "ON_CAMPUS", "한식", 37.5506, 126.9410);
-        Restaurant r2 = createRestaurant("중간", 4.5, "ON_CAMPUS", "일식", 37.5511, 126.9410);
-        Restaurant r3 = createRestaurant("먼", 4.8, "OFF_CAMPUS", "중식", 37.5520, 126.9410);
-        restaurantRepository.saveAll(List.of(r1, r2, r3));
+        RestaurantSearchRequest request = new RestaurantSearchRequest();
+        request.setLatitude(BASE_LAT);
+        request.setLongitude(BASE_LNG);
+        request.setSortBy(SortBy.DISTANCE);
 
         // When
-        List<Restaurant> results = restaurantService.findRestaurants(
-            null);
+        List<Restaurant> results = restaurantService.findRestaurants(request);
 
         // Then
         assertThat(results).hasSize(3);
@@ -137,44 +93,381 @@ class RestaurantServiceTest {
     }
 
     @Test
-    @DisplayName("거리 검색 + 평점순 정렬")
-    void distanceSearch_SortByRating() {
+    @DisplayName("3. 필터X & 평점순 정렬: 모든 식당 평점 내림차순")
+    void search_NoFilter_SortByRating() {
         // Given
-        double baseLat = 37.5502;
-        double baseLng = 126.9410;
+        Restaurant low = createRestaurant("낮은평점", 4.0, 10, "한식", 37.5515, 126.9410);
+        Restaurant high = createRestaurant("높은평점", 4.9, 15, "일식", 37.5516, 126.9411);
+        Restaurant medium = createRestaurant("중간평점", 4.5, 20, "중식", 37.5517, 126.9412);
+        restaurantRepository.saveAll(List.of(low, high, medium));
 
-        Restaurant r1 = createRestaurant("가까운저평점", 4.0, "ON_CAMPUS", "한식", 37.5506, 126.9410);
-        Restaurant r2 = createRestaurant("중간고평점", 4.8, "ON_CAMPUS", "일식", 37.5511, 126.9410);
-        Restaurant r3 = createRestaurant("먼고평점", 4.9, "OFF_CAMPUS", "중식", 37.5520, 126.9410);
-        restaurantRepository.saveAll(List.of(r1, r2, r3));
+        RestaurantSearchRequest request = new RestaurantSearchRequest();
+        request.setLatitude(BASE_LAT);
+        request.setLongitude(BASE_LNG);
+        request.setSortBy(SortBy.RATING);
 
         // When
-        List<Restaurant> results = restaurantService.findRestaurants(
-            null);
+        List<Restaurant> results = restaurantService.findRestaurants(request);
 
         // Then
         assertThat(results).hasSize(3);
         assertThat(results.get(0).getStats().getRating()).isEqualTo(4.9);
-        assertThat(results.get(1).getStats().getRating()).isEqualTo(4.8);
+        assertThat(results.get(1).getStats().getRating()).isEqualTo(4.5);
         assertThat(results.get(2).getStats().getRating()).isEqualTo(4.0);
     }
 
-    // Helper
-    private Restaurant createRestaurant(String name, double rating, String type,
+    @Test
+    @DisplayName("4. 필터X & 인기순 정렬: 모든 식당 리뷰 개수 내림차순")
+    void search_NoFilter_SortByPopular() {
+        // Given
+        Restaurant r1 = createRestaurant("식당1", 4.5, 5, "한식", 37.5515, 126.9410);
+        Restaurant r2 = createRestaurant("식당2", 4.7, 20, "일식", 37.5516, 126.9411);
+        Restaurant r3 = createRestaurant("식당3", 4.2, 12, "중식", 37.5517, 126.9412);
+        restaurantRepository.saveAll(List.of(r1, r2, r3));
+
+        RestaurantSearchRequest request = new RestaurantSearchRequest();
+        request.setLatitude(BASE_LAT);
+        request.setLongitude(BASE_LNG);
+        request.setSortBy(SortBy.POPULAR);
+
+        // When
+        List<Restaurant> results = restaurantService.findRestaurants(request);
+
+        // Then
+        assertThat(results).hasSize(3);
+        assertThat(results.get(0).getStats().getReviewCount()).isEqualTo(20);
+        assertThat(results.get(1).getStats().getReviewCount()).isEqualTo(12);
+        assertThat(results.get(2).getStats().getReviewCount()).isEqualTo(5);
+    }
+
+    @Test
+    @DisplayName("5. 거리필터 & 정렬기준X: 거리 범위 내 식당 거리 오름차순")
+    void search_DistanceFilter_NoSort() {
+        // Given
+        Restaurant near = createRestaurant("가까운", 4.0, 10, "한식", 37.5506, 126.9400);
+        Restaurant far = createRestaurant("먼", 4.8, 15, "일식", 37.5600, 126.9400);
+        restaurantRepository.saveAll(List.of(near, far));
+
+        RestaurantSearchRequest request = new RestaurantSearchRequest();
+        request.setLatitude(BASE_LAT);
+        request.setLongitude(BASE_LNG);
+        request.setRadius(500);
+
+        // When
+        List<Restaurant> results = restaurantService.findRestaurants(request);
+
+        // Then
+        assertThat(results).hasSize(1);
+        assertThat(results.get(0).getName()).isEqualTo("가까운");
+    }
+
+    @Test
+    @DisplayName("6. 거리필터 & 평점순 정렬: 거리 범위 내 식당 평점 내림차순")
+    void search_DistanceFilter_SortByRating() {
+        // Given
+        Restaurant lowRating = createRestaurant("낮은평점", 4.0, 10, "한식", 37.5506, 126.9400);
+        Restaurant highRating = createRestaurant("높은평점", 4.8, 15, "일식", 37.5511, 126.9400);
+        Restaurant far = createRestaurant("먼", 4.9, 20, "중식", 37.5600, 126.9400);
+        restaurantRepository.saveAll(List.of(lowRating, highRating, far));
+
+        RestaurantSearchRequest request = new RestaurantSearchRequest();
+        request.setLatitude(BASE_LAT);
+        request.setLongitude(BASE_LNG);
+        request.setRadius(1000);
+        request.setSortBy(SortBy.RATING);
+
+        // When
+        List<Restaurant> results = restaurantService.findRestaurants(request);
+
+        // Then
+        assertThat(results).hasSize(2);
+        assertThat(results.get(0).getStats().getRating()).isEqualTo(4.8);
+        assertThat(results.get(1).getStats().getRating()).isEqualTo(4.0);
+    }
+
+    @Test
+    @DisplayName("7. 거리필터 & 인기순 정렬: 거리 범위 내 식당 리뷰 개수 내림차순")
+    void search_DistanceFilter_SortByPopular() {
+        // Given
+        Restaurant lowReview = createRestaurant("리뷰적음", 4.0, 5, "한식", 37.5506, 126.9400);
+        Restaurant highReview = createRestaurant("리뷰많음", 4.2, 15, "일식", 37.5507, 126.9400);
+        Restaurant far = createRestaurant("먼", 4.9, 100, "중식", 37.5600, 126.9400);
+        restaurantRepository.saveAll(List.of(lowReview, highReview, far));
+
+        RestaurantSearchRequest request = new RestaurantSearchRequest();
+        request.setLatitude(BASE_LAT);
+        request.setLongitude(BASE_LNG);
+        request.setRadius(500);
+        request.setSortBy(SortBy.POPULAR);
+
+        // When
+        List<Restaurant> results = restaurantService.findRestaurants(request);
+
+        // Then
+        assertThat(results).hasSize(2);
+        assertThat(results.get(0).getStats().getReviewCount()).isEqualTo(15);
+        assertThat(results.get(1).getStats().getReviewCount()).isEqualTo(5);
+    }
+
+    @Test
+    @DisplayName("8. 카테고리필터 & 정렬기준X: 해당 카테고리 식당 랜덤(DB 순서)")
+    void search_CategoryFilter_NoSort() {
+        // Given
+        Restaurant korean1 = createRestaurant("한식1", 4.5, 10, "한식", 37.5515, 126.9410);
+        Restaurant korean2 = createRestaurant("한식2", 4.3, 15, "한식", 37.5516, 126.9411);
+        Restaurant japanese = createRestaurant("일식", 4.8, 20, "일식", 37.5517, 126.9412);
+        restaurantRepository.saveAll(List.of(korean1, korean2, japanese));
+
+        RestaurantSearchRequest request = new RestaurantSearchRequest();
+        request.setCategory("한식");
+        request.setLatitude(BASE_LAT);
+        request.setLongitude(BASE_LNG);
+
+        // When
+        List<Restaurant> results = restaurantService.findRestaurants(request);
+
+        // Then
+        assertThat(results).hasSize(2);
+        assertThat(results).extracting(Restaurant::getCategory).containsOnly("한식");
+    }
+
+    @Test
+    @DisplayName("9. 카테고리필터 & 거리순 정렬: 해당 카테고리 식당 거리 오름차순")
+    void search_CategoryFilter_SortByDistance() {
+        // Given
+        Restaurant nearKorean = createRestaurant("가까운한식", 4.2, 10, "한식", 37.5506, 126.9400);
+        Restaurant farKorean = createRestaurant("먼한식", 4.7, 15, "한식", 37.5520, 126.9400);
+        Restaurant japanese = createRestaurant("일식", 4.9, 20, "일식", 37.5505, 126.9400);
+        restaurantRepository.saveAll(List.of(farKorean, nearKorean, japanese));
+
+        RestaurantSearchRequest request = new RestaurantSearchRequest();
+        request.setCategory("한식");
+        request.setLatitude(BASE_LAT);
+        request.setLongitude(BASE_LNG);
+        request.setSortBy(SortBy.DISTANCE);
+
+        // When
+        List<Restaurant> results = restaurantService.findRestaurants(request);
+
+        // Then
+        assertThat(results).hasSize(2);
+        assertThat(results.get(0).getName()).isEqualTo("가까운한식");
+        assertThat(results.get(1).getName()).isEqualTo("먼한식");
+        assertThat(results).extracting(Restaurant::getCategory).containsOnly("한식");
+    }
+
+    @Test
+    @DisplayName("10. 카테고리필터 & 평점순 정렬: 해당 카테고리 식당 평점 내림차순")
+    void search_CategoryFilter_SortByRating() {
+        // Given
+        Restaurant korean1 = createRestaurant("한식1", 4.3, 10, "한식", 37.5515, 126.9410);
+        Restaurant korean2 = createRestaurant("한식2", 4.7, 15, "한식", 37.5516, 126.9411);
+        Restaurant japanese = createRestaurant("일식", 4.9, 20, "일식", 37.5517, 126.9412);
+        restaurantRepository.saveAll(List.of(korean1, korean2, japanese));
+
+        RestaurantSearchRequest request = new RestaurantSearchRequest();
+        request.setCategory("한식");
+        request.setLatitude(BASE_LAT);
+        request.setLongitude(BASE_LNG);
+        request.setSortBy(SortBy.RATING);
+
+        // When
+        List<Restaurant> results = restaurantService.findRestaurants(request);
+
+        // Then
+        assertThat(results).hasSize(2);
+        assertThat(results.get(0).getStats().getRating()).isEqualTo(4.7);
+        assertThat(results.get(1).getStats().getRating()).isEqualTo(4.3);
+        assertThat(results).extracting(Restaurant::getCategory).containsOnly("한식");
+    }
+
+    @Test
+    @DisplayName("11. 카테고리필터 & 인기순 정렬: 해당 카테고리 식당 리뷰 개수 내림차순")
+    void search_CategoryFilter_SortByPopular() {
+        // Given
+        Restaurant k1 = createRestaurant("한식1", 4.0, 3, "한식", 37.5515, 126.9410);
+        Restaurant k2 = createRestaurant("한식2", 4.5, 10, "한식", 37.5516, 126.9411);
+        Restaurant j1 = createRestaurant("일식", 4.8, 20, "일식", 37.5517, 126.9412);
+        restaurantRepository.saveAll(List.of(k1, k2, j1));
+
+        RestaurantSearchRequest request = new RestaurantSearchRequest();
+        request.setCategory("한식");
+        request.setLatitude(BASE_LAT);
+        request.setLongitude(BASE_LNG);
+        request.setSortBy(SortBy.POPULAR);
+
+        // When
+        List<Restaurant> results = restaurantService.findRestaurants(request);
+
+        // Then
+        assertThat(results).hasSize(2);
+        assertThat(results.get(0).getStats().getReviewCount()).isEqualTo(10);
+        assertThat(results.get(1).getStats().getReviewCount()).isEqualTo(3);
+        assertThat(results).extracting(Restaurant::getCategory).containsOnly("한식");
+    }
+
+    @Test
+    @DisplayName("12. 거리+카테고리필터 & 정렬기준X: 거리 범위 내 해당 카테고리 식당 거리 오름차순")
+    void search_DistanceAndCategoryFilter_NoSort() {
+        // Given
+        Restaurant nearKorean = createRestaurant("가까운한식", 4.2, 10, "한식", 37.5506, 126.9400);
+        Restaurant farKorean = createRestaurant("먼한식", 4.7, 15, "한식", 37.5600, 126.9400);
+        Restaurant nearJapanese = createRestaurant("가까운일식", 4.9, 20, "일식", 37.5507, 126.9400);
+        restaurantRepository.saveAll(List.of(nearKorean, farKorean, nearJapanese));
+
+        RestaurantSearchRequest request = new RestaurantSearchRequest();
+        request.setCategory("한식");
+        request.setLatitude(BASE_LAT);
+        request.setLongitude(BASE_LNG);
+        request.setRadius(500);
+
+        // When
+        List<Restaurant> results = restaurantService.findRestaurants(request);
+
+        // Then
+        assertThat(results).hasSize(1);
+        assertThat(results.get(0).getName()).isEqualTo("가까운한식");
+        assertThat(results.get(0).getCategory()).isEqualTo("한식");
+    }
+
+    @Test
+    @DisplayName("13. 거리+카테고리필터 & 평점순 정렬: 거리 범위 내 해당 카테고리 식당 평점 내림차순")
+    void search_DistanceAndCategoryFilter_SortByRating() {
+        // Given
+        Restaurant r1 = createRestaurant("한식1", 4.2, 10, "한식", 37.5506, 126.9400);
+        Restaurant r2 = createRestaurant("한식2", 4.7, 15, "한식", 37.5511, 126.9400);
+        Restaurant farKorean = createRestaurant("먼한식", 4.9, 20, "한식", 37.5600, 126.9400);
+        Restaurant nearJapanese = createRestaurant("일식", 4.9, 25, "일식", 37.5507, 126.9400);
+        restaurantRepository.saveAll(List.of(r1, r2, farKorean, nearJapanese));
+
+        RestaurantSearchRequest request = new RestaurantSearchRequest();
+        request.setCategory("한식");
+        request.setLatitude(BASE_LAT);
+        request.setLongitude(BASE_LNG);
+        request.setRadius(1000);
+        request.setSortBy(SortBy.RATING);
+
+        // When
+        List<Restaurant> results = restaurantService.findRestaurants(request);
+
+        // Then
+        assertThat(results).hasSize(2);
+        assertThat(results.get(0).getStats().getRating()).isEqualTo(4.7);
+        assertThat(results.get(1).getStats().getRating()).isEqualTo(4.2);
+        assertThat(results).extracting(Restaurant::getCategory).containsOnly("한식");
+    }
+
+    @Test
+    @DisplayName("14. 거리+카테고리필터 & 인기순 정렬: 거리 범위 내 해당 카테고리 식당 리뷰 개수 내림차순")
+    void search_DistanceAndCategoryFilter_SortByPopular() {
+        // Given
+        Restaurant r1 = createRestaurant("한식1", 4.0, 5, "한식", 37.5506, 126.9400);
+        Restaurant r2 = createRestaurant("한식2", 4.7, 15, "한식", 37.5507, 126.9400);
+        Restaurant r3 = createRestaurant("일식", 4.9, 20, "일식", 37.5508, 126.9400);
+        restaurantRepository.saveAll(List.of(r1, r2, r3));
+
+        RestaurantSearchRequest request = new RestaurantSearchRequest();
+        request.setCategory("한식");
+        request.setLatitude(BASE_LAT);
+        request.setLongitude(BASE_LNG);
+        request.setRadius(500);
+        request.setSortBy(SortBy.POPULAR);
+
+        // When
+        List<Restaurant> results = restaurantService.findRestaurants(request);
+
+        // Then
+        assertThat(results).hasSize(2);
+        assertThat(results.get(0).getStats().getReviewCount()).isEqualTo(15);
+        assertThat(results.get(1).getStats().getReviewCount()).isEqualTo(5);
+        assertThat(results).extracting(Restaurant::getCategory).containsOnly("한식");
+    }
+
+    // ========== 예외 케이스 3개 ==========
+
+    @Test
+    @DisplayName("예외1. 위도/경도 미제공 - 거리순 정렬 시 예외 발생")
+    void exception_MissingCoordinates_DistanceSort() {
+        // Given
+        RestaurantSearchRequest request = new RestaurantSearchRequest();
+        request.setSortBy(SortBy.DISTANCE);
+
+        // When & Then
+        assertThatThrownBy(() -> restaurantService.findRestaurants(request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("위도/경도");
+    }
+
+    @Test
+    @DisplayName("예외1. 위도/경도 미제공 - 거리필터 시 예외 발생")
+    void exception_MissingCoordinates_DistanceFilter() {
+        // Given
+        RestaurantSearchRequest request = new RestaurantSearchRequest();
+        request.setRadius(1000);
+
+        // When & Then
+        assertThatThrownBy(() -> restaurantService.findRestaurants(request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("위도/경도");
+    }
+
+    @Test
+    @DisplayName("예외2. 비활성 식당은 조회되지 않음")
+    void exception_InactiveRestaurants_NotIncluded() {
+        // Given
+        Restaurant active = createRestaurant("활성", 4.5, 10, "한식", 37.5515, 126.9410);
+        Restaurant inactive = createRestaurant("비활성", 4.9, 15, "한식", 37.5516, 126.9411);
+        inactive.setActive(false);
+        restaurantRepository.saveAll(List.of(active, inactive));
+
+        RestaurantSearchRequest request = new RestaurantSearchRequest();
+        request.setLatitude(BASE_LAT);
+        request.setLongitude(BASE_LNG);
+
+        // When
+        List<Restaurant> results = restaurantService.findRestaurants(request);
+
+        // Then
+        assertThat(results).hasSize(1);
+        assertThat(results.get(0).getName()).isEqualTo("활성");
+        assertThat(results.get(0).isActive()).isTrue();
+    }
+
+    @Test
+    @DisplayName("예외3. 존재하지 않는 카테고리 조회 시 빈 리스트 반환")
+    void exception_NonExistentCategory_ReturnsEmptyList() {
+        // Given
+        Restaurant korean = createRestaurant("한식", 4.5, 10, "한식", 37.5515, 126.9410);
+        Restaurant japanese = createRestaurant("일식", 4.8, 15, "일식", 37.5516, 126.9411);
+        restaurantRepository.saveAll(List.of(korean, japanese));
+
+        RestaurantSearchRequest request = new RestaurantSearchRequest();
+        request.setCategory("존재하지않는카테고리");
+        request.setLatitude(BASE_LAT);
+        request.setLongitude(BASE_LNG);
+
+        // When
+        List<Restaurant> results = restaurantService.findRestaurants(request);
+
+        // Then
+        assertThat(results).isEmpty();
+    }
+
+    // ========== Helper 메서드 ==========
+    private Restaurant createRestaurant(String name, double rating, int reviewCount,
                                         String category, double lat, double lng) {
         Restaurant restaurant = new Restaurant();
         restaurant.setName(name);
-        restaurant.setType(type);
+        restaurant.setType("ON_CAMPUS");
         restaurant.setCategory(category);
         restaurant.setAddress("테스트 주소");
         restaurant.setActive(true);
-
         restaurant.setLocation(new GeoJsonPoint(lng, lat));
 
         RestaurantStats stats = new RestaurantStats();
         stats.setRating(rating);
-        stats.setReviewCount(10);
-        stats.setLikeCount(5);
+        stats.setReviewCount(reviewCount);
+        stats.setLikeCount(0);
         restaurant.setStats(stats);
 
         restaurant.setCreatedAt(LocalDateTime.now());
@@ -182,4 +475,4 @@ class RestaurantServiceTest {
 
         return restaurant;
     }
-}*/
+}
