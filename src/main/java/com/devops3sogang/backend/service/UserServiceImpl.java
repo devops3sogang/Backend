@@ -10,12 +10,15 @@ import com.devops3sogang.backend.exception.UserNotFoundException;
 import com.devops3sogang.backend.repository.LikeRepository;
 import com.devops3sogang.backend.repository.ReviewRepository;
 import com.devops3sogang.backend.repository.UserRepository;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import org.springframework.security.authentication.BadCredentialsException;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -98,8 +101,14 @@ public class UserServiceImpl implements UserService {
 
         // 비밀번호 변경 요청이 있을 경우
         if (StringUtils.hasText(request.getPassword())) {
-            user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
-            log.info("비밀번호 변경 완료 - email: {}", email);
+        if (!StringUtils.hasText(request.getOldPassword()) || 
+            !passwordEncoder.matches(request.getOldPassword(), user.getPasswordHash())) {
+            log.warn("비밀번호 불일치 - email: {}", email);
+            throw new BadCredentialsException("현재 비밀번호가 올바르지 않습니다.");
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+        log.info("비밀번호 변경 완료 - email: {}", email);
         }
 
         user.setUpdatedAt(LocalDateTime.now());
