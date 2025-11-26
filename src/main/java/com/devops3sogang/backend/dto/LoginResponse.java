@@ -7,8 +7,11 @@ import io.swagger.v3.oas.annotations.media.Schema;
 @Data
 @Schema(description = "로그인 응답 DTO")
 public class LoginResponse {
-    @Schema(description = "JWT 인증 토큰")
-    private String token;
+    @Schema(description = "Access Token (JWT)")
+    private String accessToken;
+
+    @Schema (description = "Refresh Token")
+    private String refreshToken;
 
     @Schema(description = "토큰 타입", example = "Bearer")
     private String tokenType = "Bearer";
