@@ -44,6 +44,9 @@ public class ReviewResponse {
     @Schema(description = "좋아요 수", example = "15")
     private int likeCount;
 
+    @Schema(description = "리뷰 작성일", example = "2025-01-05T10:30:00Z")
+    private String createdAt;
+
     @Data
     @Builder
     @NoArgsConstructor

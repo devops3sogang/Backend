@@ -102,6 +102,7 @@ public class ReviewController {
             .content(review.getContent())
             .imageUrls(imageUrls)
             .likeCount(review.getLikeCount())
+            .createdAt(review.getCreatedAt() != null ? review.getCreatedAt().toString() : null)
             .build();
     }
 
