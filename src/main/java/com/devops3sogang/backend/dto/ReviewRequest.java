@@ -1,6 +1,6 @@
 package com.devops3sogang.backend.dto;
 
-import com.devops3sogang.backend.document.Ratings;
+import com.devops3sogang.backend.document.Rating;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -17,7 +17,7 @@ public class ReviewRequest {
 
     @Schema(description = "세부 평점")
     @NotNull(message = "평점을 입력해주세요.")
-    private Ratings ratings;
+    private Rating rating;
 
     @Schema(description = "첨부 이미지 URL 배열 (선택 사항)", example = "[\"https://example.com/image1.jpg\", \"https://example.com/image2.jpg\"]")
     private List<String> imageUrls;

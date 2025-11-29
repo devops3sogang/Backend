@@ -55,7 +55,7 @@ public class ReviewServiceImpl implements ReviewService {
         review.setTarget(target);
 
         review.setContent(request.getContent());
-        review.setRatings(request.getRatings());
+        review.setRating(request.getRating());
         review.setImageUrls(request.getImageUrls());
         review.setLikeCount(0);
         // createdAt, updatedAt은 @CreatedDate, @LastModifiedDate로 자동 설정됨
@@ -118,7 +118,7 @@ public class ReviewServiceImpl implements ReviewService {
         }
 
         review.setContent(request.getContent());
-        review.setRatings(request.getRatings());
+        review.setRating(request.getRating());
         review.setImageUrls(request.getImageUrls());
         // updatedAt은 @LastModifiedDate로 자동 업데이트됨
 

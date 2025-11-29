@@ -17,7 +17,7 @@ public class Review {
     private String userId;
     private String nickname;
     private ReviewTarget target;
-    private Ratings ratings;
+    private Rating rating;
     private String content;
     private List<String> imageUrls; // 이미지 URL 배열
     private int likeCount;

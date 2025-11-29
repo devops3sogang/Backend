@@ -85,8 +85,8 @@ public class RestaurantServiceImpl implements RestaurantService {
 
                     // menuRatings 변환
                     List<RestaurantDetailResponse.MenuRatingInfo> menuRatingInfos = new ArrayList<>();
-                    if (review.getRatings() != null && review.getRatings().getMenuRatings() != null) {
-                        menuRatingInfos = review.getRatings().getMenuRatings().stream()
+                    if (review.getRating() != null && review.getRating().getMenuRatings() != null) {
+                        menuRatingInfos = review.getRating().getMenuRatings().stream()
                                 .map(mr -> RestaurantDetailResponse.MenuRatingInfo.builder()
                                         .menuName(mr.getMenuName())
                                         .rating(mr.getRating())
@@ -94,18 +94,18 @@ public class RestaurantServiceImpl implements RestaurantService {
                                 .toList();
                     }
 
-                    // ratings 변환
-                    RestaurantDetailResponse.RatingsInfo ratingsInfo = RestaurantDetailResponse.RatingsInfo.builder()
+                    // rating 변환
+                    RestaurantDetailResponse.RatingInfo ratingInfo = RestaurantDetailResponse.RatingInfo.builder()
                             .menuRatings(menuRatingInfos)
                             .restaurantRating(
-                                    review.getRatings() != null ? review.getRatings().getRestaurantRating() : 0)
+                                    review.getRating() != null ? review.getRating().getRestaurantRating() : 0)
                             .build();
 
                     return RestaurantDetailResponse.ReviewInfo.builder()
                             .id(review.getId())
                             .userId(review.getUserId())
                             .nickname(review.getNickname())
-                            .ratings(ratingsInfo)
+                            .rating(ratingInfo)
                             .content(review.getContent())
                             .imageUrls(review.getImageUrls())
                             .likeCount(review.getLikeCount())
@@ -283,7 +283,7 @@ public class RestaurantServiceImpl implements RestaurantService {
         } else {
             // 2-2. 리뷰가 있으면 평균 평점을 계산합니다.
             double averageRating = reviews.stream()
-                    .mapToDouble(review -> review.getRatings().getRestaurantRating())
+                    .mapToDouble(review -> review.getRating().getRestaurantRating())
                     .average()
                     .orElse(0.0);
 

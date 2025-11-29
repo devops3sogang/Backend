@@ -6,7 +6,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class Ratings {
+public class Rating {
     @Schema(description = "메뉴별 평점 목록")
     private List<MenuRating> menuRatings;
 

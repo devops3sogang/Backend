@@ -75,7 +75,7 @@ public class RestaurantDetailResponse {
         private String nickname;
 
         @Schema(description = "평점 정보")
-        private RatingsInfo ratings;
+        private RatingInfo rating;
 
         @Schema(description = "리뷰 내용", example = "김밥이 정말 맛있어요! 참치가 많이 들어있습니다.")
         private String content;
@@ -98,7 +98,7 @@ public class RestaurantDetailResponse {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class RatingsInfo {
+    public static class RatingInfo {
         @Schema(description = "메뉴별 평점 목록")
         private List<MenuRatingInfo> menuRatings;
 

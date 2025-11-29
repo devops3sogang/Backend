@@ -73,8 +73,8 @@ public class ReviewController {
     private ReviewResponse convertToResponse(Review review) {
         // menuRatings 변환 (null 체크 추가)
         List<ReviewResponse.MenuRatingResponse> menuRatings = List.of();
-        if (review.getRatings() != null && review.getRatings().getMenuRatings() != null) {
-            menuRatings = review.getRatings().getMenuRatings().stream()
+        if (review.getRating() != null && review.getRating().getMenuRatings() != null) {
+            menuRatings = review.getRating().getMenuRatings().stream()
                 .map(mr -> ReviewResponse.MenuRatingResponse.builder()
                     .menuName(mr.getMenuName())
                     .rating(mr.getRating())
@@ -83,7 +83,7 @@ public class ReviewController {
         }
 
         // RatingsResponse 생성
-        int restaurantRating = (review.getRatings() != null) ? review.getRatings().getRestaurantRating() : 0;
+        int restaurantRating = (review.getRating() != null) ? review.getRating().getRestaurantRating() : 0;
         ReviewResponse.RatingsResponse ratingsResponse = ReviewResponse.RatingsResponse.builder()
             .menuRatings(menuRatings)
             .restaurantRating(restaurantRating)

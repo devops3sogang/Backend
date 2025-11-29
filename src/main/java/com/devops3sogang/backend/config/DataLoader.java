@@ -170,13 +170,13 @@ public class DataLoader implements CommandLineRunner {
         target1.setMenuItems("김치찌개");
         review1.setTarget(target1);
 
-        Ratings ratings1 = new Ratings();
-        Ratings.MenuRating menuRating1 = new Ratings.MenuRating();
+        Rating rating1 = new Rating();
+        Rating.MenuRating menuRating1 = new Rating.MenuRating();
         menuRating1.setMenuName("김치찌개");
         menuRating1.setRating(5);
-        ratings1.setMenuRatings(Arrays.asList(menuRating1));
-        ratings1.setRestaurantRating(4);
-        review1.setRatings(ratings1);
+        rating1.setMenuRatings(Arrays.asList(menuRating1));
+        rating1.setRestaurantRating(4);
+        review1.setRating(rating1);
 
         review1.setContent("김치찌개가 정말 맛있어요! 국물이 깊고 진해요. 서강대 근처에서 최고입니다.");
         review1.setImageUrls(Arrays.asList("https://example.com/images/review1.jpg"));
@@ -197,13 +197,13 @@ public class DataLoader implements CommandLineRunner {
         target2.setMenuItems("제육볶음");
         review2.setTarget(target2);
 
-        Ratings ratings2 = new Ratings();
-        Ratings.MenuRating menuRating2 = new Ratings.MenuRating();
+        Rating rating2 = new Rating();
+        Rating.MenuRating menuRating2 = new Rating.MenuRating();
         menuRating2.setMenuName("제육볶음");
         menuRating2.setRating(4);
-        ratings2.setMenuRatings(Arrays.asList(menuRating2));
-        ratings2.setRestaurantRating(4);
-        review2.setRatings(ratings2);
+        rating2.setMenuRatings(Arrays.asList(menuRating2));
+        rating2.setRestaurantRating(4);
+        review2.setRating(rating2);
 
         review2.setContent("제육볶음도 맛있네요. 가성비 좋아요!");
         review2.setImageUrls(null);
@@ -224,13 +224,13 @@ public class DataLoader implements CommandLineRunner {
         target3.setMenuItems("등심돈까스");
         review3.setTarget(target3);
 
-        Ratings ratings3 = new Ratings();
-        Ratings.MenuRating menuRating3 = new Ratings.MenuRating();
+        Rating rating3 = new Rating();
+        Rating.MenuRating menuRating3 = new Rating.MenuRating();
         menuRating3.setMenuName("등심돈까스");
         menuRating3.setRating(5);
-        ratings3.setMenuRatings(Arrays.asList(menuRating3));
-        ratings3.setRestaurantRating(5);
-        review3.setRatings(ratings3);
+        rating3.setMenuRatings(Arrays.asList(menuRating3));
+        rating3.setRestaurantRating(5);
+        review3.setRating(rating3);
 
         review3.setContent("돈까스가 바삭하고 고기가 두툼해요. 분위기도 좋고 데이트하기 좋습니다.");
         review3.setImageUrls(Arrays.asList("https://example.com/images/review3.jpg"));
@@ -251,13 +251,13 @@ public class DataLoader implements CommandLineRunner {
         target4.setMenuItems("치즈돈까스");
         review4.setTarget(target4);
 
-        Ratings ratings4 = new Ratings();
-        Ratings.MenuRating menuRating4 = new Ratings.MenuRating();
+        Rating rating4 = new Rating();
+        Rating.MenuRating menuRating4 = new Rating.MenuRating();
         menuRating4.setMenuName("치즈돈까스");
         menuRating4.setRating(5);
-        ratings4.setMenuRatings(Arrays.asList(menuRating4));
-        ratings4.setRestaurantRating(4);
-        review4.setRatings(ratings4);
+        rating4.setMenuRatings(Arrays.asList(menuRating4));
+        rating4.setRestaurantRating(4);
+        review4.setRating(rating4);
 
         review4.setContent("치즈돈까스 치즈가 쭉쭉 늘어나요! 맛있습니다. 다만 가격이 조금 비싼 편.");
         review4.setImageUrls(null);
@@ -281,7 +281,7 @@ public class DataLoader implements CommandLineRunner {
 
         // 평균 평점 계산 (restaurantRating의 평균)
         double avgRating = reviews.stream()
-                .mapToDouble(r -> r.getRatings().getRestaurantRating())
+                .mapToDouble(r -> r.getRating().getRestaurantRating())
                 .average()
                 .orElse(0.0);
         stats.setRating(Math.round(avgRating * 10) / 10.0); // 소수점 첫째자리까지
