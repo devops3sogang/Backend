@@ -2,6 +2,7 @@ package com.devops3sogang.backend.service;
 
 import com.devops3sogang.backend.document.Review;
 import com.devops3sogang.backend.document.ReviewTarget;
+import com.devops3sogang.backend.document.Role;
 import com.devops3sogang.backend.document.User;
 import com.devops3sogang.backend.dto.ReviewRequest;
 import com.devops3sogang.backend.dto.ReviewUpdateRequest;
@@ -147,8 +148,8 @@ public class ReviewServiceImpl implements ReviewService {
                 });
 
         // 권한 확인
-        if (!review.getUserId().equals(user.getId()) && !user.getRole().equals("ADMIN")) {
-            log.warn("리뷰 삭제 권한 없음 - reviewId: {}, userId: {}", reviewId, user.getId());
+        if (!review.getUserId().equals(user.getId()) && user.getRole() != Role.ADMIN) {
+            log.warn("리뷰 삭제 권한 없음 - reviewId: {}, userId: {}, role: {}", reviewId, user.getId(), user.getRole());
             throw new AccessDeniedException("리뷰를 삭제할 권한이 없습니다.");
         }
 
