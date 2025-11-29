@@ -70,7 +70,7 @@ public class RestaurantCustomRepositoryImpl implements RestaurantCustomRepositor
         }
 
         if (sortBy == SortBy.RATING) {
-            Query query = new Query(Criteria.where("isActive").is(true));
+            Query query = new Query();
 
             if (hasCategory) {
                 query.addCriteria(Criteria.where("category").is(category));
@@ -84,7 +84,7 @@ public class RestaurantCustomRepositoryImpl implements RestaurantCustomRepositor
         }
 
         if (sortBy == SortBy.POPULAR) {
-            Query query = new Query(Criteria.where("isActive").is(true));
+            Query query = new Query();
 
             if (hasCategory) {
                 query.addCriteria(Criteria.where("category").is(category));
@@ -106,7 +106,7 @@ public class RestaurantCustomRepositoryImpl implements RestaurantCustomRepositor
             );
         }
 
-        Query query = new Query(Criteria.where("isActive").is(true));
+        Query query = new Query();
 
         if (hasCategory) {
             query.addCriteria(Criteria.where("category").is(category));
@@ -125,15 +125,12 @@ public class RestaurantCustomRepositoryImpl implements RestaurantCustomRepositor
             nearQuery.maxDistance(new Distance(radiusInMeters / 1000.0, Metrics.KILOMETERS));
         }
         
-        // 기본 조건: isActive = true
-        Criteria criteria = Criteria.where("isActive").is(true);
-        
-        // 카테고리 필터
+        // 카테고리 필터만 적용
         if (category != null && !category.isBlank()) {
-            criteria.and("category").is(category);
+            Criteria criteria = Criteria.where("category").is(category);
+            nearQuery.query(Query.query(criteria));
         }
-        
-        nearQuery.query(Query.query(criteria));
+        // 카테고리 필터가 없으면 모든 식당 조회
         
         // 거리순으로 정렬되어 반환됨
         GeoResults<Restaurant> results = mongoTemplate.geoNear(nearQuery, Restaurant.class);

@@ -43,9 +43,17 @@ public class RestaurantServiceImpl implements RestaurantService {
             request.getSortBy());
 
         List<Restaurant> restaurants = restaurantRepository.search(request);
-        
+
         log.info("식당 검색 완료 - 결과: {} 개", restaurants.size());
-        
+
+        return restaurants;
+    }
+
+    @Override
+    public List<Restaurant> findAllRestaurants() {
+        log.info("관리자: 모든 식당 조회 (휴업 포함)");
+        List<Restaurant> restaurants = restaurantRepository.findAll();
+        log.info("관리자: 식당 조회 완료 - 결과: {} 개", restaurants.size());
         return restaurants;
     }
 
@@ -164,7 +172,9 @@ public class RestaurantServiceImpl implements RestaurantService {
         restaurant.setAddress(request.getAddress());
         restaurant.setLocation(toGeoJsonPoint(request.getLocation()));
         restaurant.setMenu(request.getMenu());
-        restaurant.setActive(true); // 기본값은 활성 상태
+        restaurant.setImageUrl(request.getImageUrl());
+        // isActive 값이 null이면 기본값 true, 아니면 요청값 사용
+        restaurant.setActive(request.getIsActive() == null || request.getIsActive());
 
         // Stats 초기화
         RestaurantStats stats = new RestaurantStats();
@@ -219,6 +229,11 @@ public class RestaurantServiceImpl implements RestaurantService {
 
         if (request.getImageUrl() != null) {
             restaurant.setImageUrl(request.getImageUrl());
+        }
+
+        // isActive 상태 업데이트
+        if (request.getIsActive() != null) {
+            restaurant.setActive(request.getIsActive());
         }
 
         // 3. 저장

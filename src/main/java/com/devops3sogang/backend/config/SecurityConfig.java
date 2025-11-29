@@ -54,6 +54,7 @@ public class SecurityConfig {
                                         "/swagger-resources/**",
                                         "/swagger-ui.html")
                         .permitAll()
+                        .requestMatchers("/uploads/**").permitAll() // 업로드된 이미지 접근 허용
 
                         // --- 2. 관리자 전용 경로 ---
                         .requestMatchers("/admin/**").hasRole("ADMIN")
@@ -62,6 +63,7 @@ public class SecurityConfig {
 
                         // --- 3. 인증 필요 경로 (구체적으로 명시) ---
                         .requestMatchers("/users/me/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/images/upload").authenticated() // 이미지 업로드는 인증 필요
                         .requestMatchers(HttpMethod.POST, "/restaurants/{restaurantId}/reviews")
                         .authenticated()
                         .requestMatchers(HttpMethod.PUT, "/reviews/{reviewId}").authenticated()

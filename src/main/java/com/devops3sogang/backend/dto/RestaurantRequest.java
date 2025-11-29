@@ -33,6 +33,9 @@ public class RestaurantRequest {
     @Schema(description = "식당 이미지 URL", example = "https://example.com/image.jpg")
     private String imageUrl;
 
+    @Schema(description = "운영 상태 (true: 운영중, false: 휴업)", example = "true")
+    private Boolean isActive;
+
     @Schema(description = "교외 식당 메뉴 목록 (선택 사항)")
     private List<MenuItem> menu; // 교외 식당 메뉴
 }
