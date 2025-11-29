@@ -2,7 +2,6 @@ package com.devops3sogang.backend.controller;
 
 import com.devops3sogang.backend.dto.LoginRequest;
 import com.devops3sogang.backend.dto.LoginResponse;
-import com.devops3sogang.backend.dto.LoginResponse.UserInfo;
 import com.devops3sogang.backend.dto.RegisterRequest;
 import com.devops3sogang.backend.dto.RegisterResponse;
 import com.devops3sogang.backend.document.Role;
@@ -17,10 +16,9 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -75,14 +73,15 @@ class AuthControllerTest {
         request.setEmail("user1@sogang.ac.kr");
         request.setPassword("password123");
 
-        LoginResponse.UserInfo userInfo = new UserInfo();
+        LoginResponse.UserInfo userInfo = new LoginResponse.UserInfo();
         userInfo.set_id("507f191e810c19729de860e1");
         userInfo.setEmail("user1@sogang.ac.kr");
         userInfo.setNickname("김철수");
         userInfo.setRole(Role.USER);
 
         LoginResponse mockResponse = new LoginResponse();
-        mockResponse.setToken("token_here");
+        mockResponse.setAccessToken("access_token_here");
+        mockResponse.setRefreshToken("refresh_token_here");
         mockResponse.setExpiresAt(System.currentTimeMillis() + 3600000L);
         mockResponse.setUser(userInfo);
 
@@ -92,8 +91,10 @@ class AuthControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token").value("token_here"))
+                .andExpect(jsonPath("$.accessToken").value("access_token_here"))
+                .andExpect(jsonPath("$.refreshToken").value("refresh_token_here"))
                 .andExpect(jsonPath("$.user._id").value("507f191e810c19729de860e1"))
+                .andExpect(jsonPath("$.user.email").value("user1@sogang.ac.kr"))
                 .andExpect(jsonPath("$.user.role").value("USER"));
 
         verify(authService, times(1)).login(any(LoginRequest.class));
@@ -101,8 +102,12 @@ class AuthControllerTest {
 
     @Test
     void testLogout() throws Exception {
-      mockMvc.perform(post("/auth/logout"))
-           .andDo(print())
-           .andExpect(status().isOk());
+        doNothing().when(authService).logout();
+
+        mockMvc.perform(post("/auth/logout"))
+                .andDo(print())
+                .andExpect(status().isOk());
+
+        verify(authService, times(1)).logout();
     }
 }

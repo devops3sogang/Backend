@@ -101,8 +101,8 @@ public class UserServiceImpl implements UserService {
 
         // 비밀번호 변경 요청이 있을 경우
         if (StringUtils.hasText(request.getPassword())) {
-        if (!StringUtils.hasText(request.getOldPassword()) || 
-            !passwordEncoder.matches(request.getOldPassword(), user.getPasswordHash())) {
+        if (!StringUtils.hasText(request.getCurrentPassword()) || 
+            !passwordEncoder.matches(request.getCurrentPassword(), user.getPasswordHash())) {
             log.warn("비밀번호 불일치 - email: {}", email);
             throw new BadCredentialsException("현재 비밀번호가 올바르지 않습니다.");
         }
@@ -120,35 +120,40 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void deleteUser(String email) {
+    public void deleteUser(String email, String rawPassword) {
         log.info("회원 탈퇴 시작 - email: {}", email);
-        
+
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> {
-                    log.warn("사용자를 찾을 수 없음 - email: {}", email);
-                    return new UserNotFoundException(email);
-                });
+            .orElseThrow(() -> {
+                log.warn("사용자를 찾을 수 없음 - email: {}", email);
+                return new UserNotFoundException(email);
+            });
+
+        // 비밀번호 검증
+        if (!passwordEncoder.matches(rawPassword, user.getPassword())) {
+            log.warn("비밀번호 불일치 – email: {}", email);
+            throw new BadCredentialsException("비밀번호가 일치하지 않습니다.");
+        }
 
         String userId = user.getId();
 
-        // 1. 사용자가 작성한 모든 리뷰를 찾아서 작성자 정보를 변경합니다.
+        // 1. 사용자가 작성한 리뷰 작성자 표시 변경
         List<Review> reviewsWrittenByUser = reviewRepository.findByUserId(userId);
         for (Review review : reviewsWrittenByUser) {
             review.setNickname("(탈퇴한 회원)");
             review.setUserId(null);
         }
 
-        // 2. 불필요한 DB 호출을 막기 위한 if문
         if (!reviewsWrittenByUser.isEmpty()) {
             reviewRepository.saveAll(reviewsWrittenByUser);
             log.debug("리뷰 작성자 정보 변경 완료 - {} 개", reviewsWrittenByUser.size());
         }
 
-        // 3. 사용자가 눌렀던 모든 '좋아요' 기록을 삭제합니다.
+        // 2. 좋아요 기록 삭제
         likeRepository.deleteByUserId(userId);
         log.debug("좋아요 기록 삭제 완료");
 
-        // 4. 마지막으로 사용자 정보를 삭제합니다.
+        // 3. 유저 삭제
         userRepository.delete(user);
         log.info("회원 탈퇴 완료 - email: {}", email);
     }

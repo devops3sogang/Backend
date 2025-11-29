@@ -4,6 +4,7 @@ import com.devops3sogang.backend.document.User;
 import com.devops3sogang.backend.dto.UserProfileResponse;
 import com.devops3sogang.backend.dto.UserUpdateRequest;
 import com.devops3sogang.backend.dto.UserUpdateResponse;
+import com.devops3sogang.backend.dto.DeleteUserRequest;
 import com.devops3sogang.backend.service.UserService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -56,9 +57,10 @@ public class UserController {
      * DELETE /users/me
      */
     @DeleteMapping("/me")
-    public ResponseEntity<Void> deleteMyAccount(Authentication authentication) {
-    String userEmail = authentication.getName();
-    userService.deleteUser(userEmail);
-    return ResponseEntity.status(204).build();  // ← 204 No Content
+    public ResponseEntity<Void> deleteMyAccount(Authentication authentication,
+                                                @Valid @RequestBody DeleteUserRequest request) {
+        String userEmail = authentication.getName();
+        userService.deleteUser(userEmail, request.getPassword());
+        return ResponseEntity.status(204).build();  // ← 204 No Content
     } 
 }
