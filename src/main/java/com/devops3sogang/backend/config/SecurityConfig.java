@@ -49,7 +49,7 @@ public class SecurityConfig {
                                 .accessDeniedHandler(customAccessDeniedHandler))
                 .authorizeHttpRequests(authorize -> authorize
                         // --- 1. 인증 불필요 경로 (가장 먼저) ---
-                        .requestMatchers("/auth/**", "/restaurants-view").permitAll()
+                        .requestMatchers("/auth/**", "/restaurants-view", "/api/on-campus-menus", "/api/on-campus-menus/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**",
                                         "/swagger-resources/**",
                                         "/swagger-ui.html")
@@ -88,13 +88,10 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
             CorsConfiguration configuration = new CorsConfiguration();
-            configuration.setAllowedOrigins(
-                List.of("http://localhost:8282", "http://localhost:8080", "http://43.202.229.52:8282",
-                                "https://43.202.229.52:8443",
-                                "https://xn--939at21b.xn--299aj40a3hj8tm.xn--h32bi4v.xn--3e0b707e:8443"));
+            configuration.setAllowedOriginPatterns(List.of("http://localhost:*")); 
             configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
             configuration.setAllowedHeaders(List.of("*"));
-            configuration.setAllowCredentials(true);
+            configuration.setAllowCredentials(false);
             configuration.setMaxAge(3600L);
 
             UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
