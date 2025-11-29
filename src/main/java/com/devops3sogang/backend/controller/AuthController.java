@@ -8,16 +8,17 @@ import com.devops3sogang.backend.dto.RegisterRequest;
 import com.devops3sogang.backend.dto.RegisterResponse;
 import com.devops3sogang.backend.service.AuthService;
 import com.devops3sogang.backend.service.RefreshTokenService;
-
+import org.springframework.http.HttpStatus;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-
+import org.springframework.security.authentication.BadCredentialsException;
 import java.time.LocalDateTime;
 import java.util.Map;
+import org.springframework.security.core.Authentication;
 
 @RestController
 @RequestMapping("/auth")
@@ -43,23 +44,34 @@ public class AuthController {
      */
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
-        LoginResponse response = authService.login(request);
-
-        return ResponseEntity.ok(response);
+        try {
+            LoginResponse response = authService.login(request);
+            return ResponseEntity.ok(response);
+        } catch (BadCredentialsException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+        }
     }
 
     /**
      * 로그아웃
      */
-    @PostMapping("/logout")
+   @PostMapping("/logout")
     public ResponseEntity<String> logout(@AuthenticationPrincipal User user,
-                                         @RequestHeader("Authorization") String authHeader) {
-
+                                     @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                     .body("User authentication is required");
+        }
+    
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                         .body("Authorization header is missing or invalid");
+        }
+    
         String accessToken = authHeader.replace("Bearer ", "");
         authService.logout(user.getEmail(), accessToken);
-
         return ResponseEntity.ok("로그아웃 완료");
-    }
+    } 
 
     /**
      * Access Token 재발급 (Refresh Token 사용)
@@ -76,7 +88,7 @@ public class AuthController {
         refreshTokenService.revoke(tokenRecord);
 
         String email = tokenRecord.getEmail();
-        String newAccess = jwtUtil.createToken(email);
+        String newAccess = jwtUtil.createToken(email); 
         String newRefresh = refreshTokenService.generateRefreshToken(email);
 
         return ResponseEntity.ok(Map.of(
