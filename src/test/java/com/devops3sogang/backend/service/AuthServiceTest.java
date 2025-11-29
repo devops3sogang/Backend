@@ -1,7 +1,9 @@
 package com.devops3sogang.backend.service;
 
 import com.devops3sogang.backend.config.jwt.JwtUtil;
+import com.devops3sogang.backend.document.RefreshToken;
 import com.devops3sogang.backend.document.Role;
+import com.devops3sogang.backend.document.TokenBlacklist;
 import com.devops3sogang.backend.document.User;
 import com.devops3sogang.backend.dto.LoginRequest;
 import com.devops3sogang.backend.dto.LoginResponse;
@@ -9,22 +11,27 @@ import com.devops3sogang.backend.dto.RegisterRequest;
 import com.devops3sogang.backend.dto.RegisterResponse;
 import com.devops3sogang.backend.exception.DuplicateEmailException;
 import com.devops3sogang.backend.exception.InvalidCredentialsException;
+import com.devops3sogang.backend.repository.RefreshTokenRepository;
+import com.devops3sogang.backend.repository.TokenBlacklistRepository;
 import com.devops3sogang.backend.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class AuthServiceImplTest {
 
     @Mock
@@ -36,117 +43,274 @@ class AuthServiceImplTest {
     @Mock
     private JwtUtil jwtUtil;
 
+    @Mock
+    private RefreshTokenService refreshTokenService;
+
+    @Mock
+    private RefreshTokenRepository refreshTokenRepository;
+
+    @Mock
+    private TokenBlacklistRepository tokenBlacklistRepository;
+
     @InjectMocks
     private AuthServiceImpl authService;
 
+    private RegisterRequest registerRequest;
+    private LoginRequest loginRequest;
+    private User testUser;
+
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
+        // 회원가입 요청 객체
+        registerRequest = new RegisterRequest();
+        registerRequest.setEmail("test@example.com");
+        registerRequest.setPassword("password123!");
+        registerRequest.setNickname("테스트유저");
+
+        // 로그인 요청 객체
+        loginRequest = new LoginRequest();
+        loginRequest.setEmail("test@example.com");
+        loginRequest.setPassword("password123!");
+
+        // 테스트 유저
+        testUser = new User();
+        testUser.setId("user123");
+        testUser.setEmail("test@example.com");
+        testUser.setNickname("테스트유저");
+        testUser.setPasswordHash("encodedPassword");
+        testUser.setRole(Role.USER);
+        testUser.setCreatedAt(LocalDateTime.now());
+        testUser.setUpdatedAt(LocalDateTime.now());
     }
 
     @Test
     @DisplayName("회원가입 성공 테스트")
-    void register_success() {
-        RegisterRequest request = new RegisterRequest();
-        request.setEmail("user1@sogang.ac.kr");
-        request.setNickname("김철수");
-        request.setPassword("password");
+    void registerSuccess() {
+        // given
+        given(userRepository.existsByEmail(registerRequest.getEmail())).willReturn(false);
+        given(passwordEncoder.encode(registerRequest.getPassword())).willReturn("encodedPassword");
+        given(userRepository.save(any(User.class))).willReturn(testUser);
 
-        when(userRepository.existsByEmail(request.getEmail())).thenReturn(false);
-        when(passwordEncoder.encode(request.getPassword())).thenReturn("hashed_password");
+        // when
+        RegisterResponse response = authService.register(registerRequest);
 
-        User savedUser = new User();
-        savedUser.setId("123");
-        savedUser.setEmail(request.getEmail());
-        savedUser.setNickname(request.getNickname());
-        savedUser.setPasswordHash("hashed_password");
-        savedUser.setRole(Role.USER);
-
-        when(userRepository.save(any(User.class))).thenReturn(savedUser);
-
-        RegisterResponse response = authService.register(request);
-
+        // then
         assertThat(response).isNotNull();
-        assertThat(response.get_id()).isEqualTo("123");
-        assertThat(response.getEmail()).isEqualTo("user1@sogang.ac.kr");
-        assertThat(response.getNickname()).isEqualTo("김철수");
-        assertThat(response.getRole()).isEqualTo(Role.USER);
+        assertThat(response.get_id()).isEqualTo(testUser.getId());
+        assertThat(response.getEmail()).isEqualTo(testUser.getEmail());
+        assertThat(response.getNickname()).isEqualTo(testUser.getNickname());
+        assertThat(response.getRole()).isEqualTo(testUser.getRole());
 
+        verify(userRepository, times(1)).existsByEmail(registerRequest.getEmail());
+        verify(passwordEncoder, times(1)).encode(registerRequest.getPassword());
+        verify(userRepository, times(1)).save(any(User.class));
+
+        // User 객체가 올바르게 생성되었는지 검증
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
         verify(userRepository).save(userCaptor.capture());
-        assertThat(userCaptor.getValue().getEmail()).isEqualTo("user1@sogang.ac.kr");
+        User savedUser = userCaptor.getValue();
+        assertThat(savedUser.getEmail()).isEqualTo(registerRequest.getEmail());
+        assertThat(savedUser.getNickname()).isEqualTo(registerRequest.getNickname());
+        assertThat(savedUser.getPasswordHash()).isEqualTo("encodedPassword");
     }
 
     @Test
-    @DisplayName("회원가입 실패 - 중복 이메일")
-    void register_duplicateEmail() {
-        RegisterRequest request = new RegisterRequest();
-        request.setEmail("user1@sogang.ac.kr");
-        request.setNickname("김철수");
-        request.setPassword("password");
+    @DisplayName("회원가입 실패 - 이메일 중복")
+    void registerFail_DuplicateEmail() {
+        // given
+        given(userRepository.existsByEmail(registerRequest.getEmail())).willReturn(true);
 
-        when(userRepository.existsByEmail(request.getEmail())).thenReturn(true);
+        // when & then
+        assertThatThrownBy(() -> authService.register(registerRequest))
+                .isInstanceOf(DuplicateEmailException.class);
 
-        assertThrows(DuplicateEmailException.class, () -> authService.register(request));
+        verify(userRepository, times(1)).existsByEmail(registerRequest.getEmail());
+        verify(passwordEncoder, never()).encode(anyString());
         verify(userRepository, never()).save(any(User.class));
     }
 
     @Test
     @DisplayName("로그인 성공 테스트")
-    void login_success() {
-        LoginRequest request = new LoginRequest();
-        request.setEmail("user1@sogang.ac.kr");
-        request.setPassword("password");
+    void loginSuccess() {
+        // given
+        String accessToken = "access-token-123";
+        String refreshToken = "refresh-token-456";
+        Long expiresAt = System.currentTimeMillis() + 3600000;
 
-        User user = new User();
-        user.setId("123");
-        user.setEmail(request.getEmail());
-        user.setNickname("김철수");
-        user.setPasswordHash("hashed_password");
-        user.setRole(Role.USER);
+        given(userRepository.findByEmail(loginRequest.getEmail())).willReturn(Optional.of(testUser));
+        given(passwordEncoder.matches(loginRequest.getPassword(), testUser.getPasswordHash())).willReturn(true);
+        given(jwtUtil.createToken(testUser.getEmail())).willReturn(accessToken);
+        given(refreshTokenService.generateRefreshToken(testUser.getEmail())).willReturn(refreshToken);
+        given(jwtUtil.getExpirationTimeMillis(accessToken)).willReturn(expiresAt);
 
-        when(userRepository.findByEmail(request.getEmail())).thenReturn(Optional.of(user));
-        when(passwordEncoder.matches(request.getPassword(), "hashed_password")).thenReturn(true);
-        when(jwtUtil.createToken(user.getEmail())).thenReturn("jwt_token");
-        when(jwtUtil.getExpirationTimeMillis("jwt_token")).thenReturn(3600000L);
+        // when
+        LoginResponse response = authService.login(loginRequest);
 
-        LoginResponse response = authService.login(request);
-
+        // then
         assertThat(response).isNotNull();
-        assertThat(response.getToken()).isEqualTo("jwt_token");
-        assertThat(response.getExpiresAt()).isEqualTo(3600000L);
-        assertThat(response.getUser().get_id()).isEqualTo("123");
-        assertThat(response.getUser().getEmail()).isEqualTo("user1@sogang.ac.kr");
-        assertThat(response.getUser().getNickname()).isEqualTo("김철수");
-        assertThat(response.getUser().getRole()).isEqualTo(Role.USER);
+        assertThat(response.getAccessToken()).isEqualTo(accessToken);
+        assertThat(response.getRefreshToken()).isEqualTo(refreshToken);
+        assertThat(response.getExpiresAt()).isEqualTo(expiresAt);
+        assertThat(response.getUser()).isNotNull();
+        assertThat(response.getUser().get_id()).isEqualTo(testUser.getId());
+        assertThat(response.getUser().getEmail()).isEqualTo(testUser.getEmail());
+        assertThat(response.getUser().getNickname()).isEqualTo(testUser.getNickname());
+        assertThat(response.getUser().getRole()).isEqualTo(testUser.getRole());
+
+        verify(userRepository, times(1)).findByEmail(loginRequest.getEmail());
+        verify(passwordEncoder, times(1)).matches(loginRequest.getPassword(), testUser.getPasswordHash());
+        verify(jwtUtil, times(1)).createToken(testUser.getEmail());
+        verify(refreshTokenService, times(1)).generateRefreshToken(testUser.getEmail());
     }
 
     @Test
-    @DisplayName("로그인 실패 - 사용자 없음")
-    void login_userNotFound() {
-        LoginRequest request = new LoginRequest();
-        request.setEmail("user1@sogang.ac.kr");
-        request.setPassword("password");
+    @DisplayName("로그인 실패 - 존재하지 않는 사용자")
+    void loginFail_UserNotFound() {
+        // given
+        given(userRepository.findByEmail(loginRequest.getEmail())).willReturn(Optional.empty());
 
-        when(userRepository.findByEmail(request.getEmail())).thenReturn(Optional.empty());
+        // when & then
+        assertThatThrownBy(() -> authService.login(loginRequest))
+                .isInstanceOf(InvalidCredentialsException.class);
 
-        assertThrows(InvalidCredentialsException.class, () -> authService.login(request));
+        verify(userRepository, times(1)).findByEmail(loginRequest.getEmail());
+        verify(passwordEncoder, never()).matches(anyString(), anyString());
+        verify(jwtUtil, never()).createToken(anyString());
+        verify(refreshTokenService, never()).generateRefreshToken(anyString());
     }
 
     @Test
     @DisplayName("로그인 실패 - 비밀번호 불일치")
-    void login_wrongPassword() {
-        LoginRequest request = new LoginRequest();
-        request.setEmail("user1@sogang.ac.kr");
-        request.setPassword("wrong_password");
+    void loginFail_InvalidPassword() {
+        // given
+        given(userRepository.findByEmail(loginRequest.getEmail())).willReturn(Optional.of(testUser));
+        given(passwordEncoder.matches(loginRequest.getPassword(), testUser.getPasswordHash())).willReturn(false);
 
-        User user = new User();
-        user.setEmail(request.getEmail());
-        user.setPasswordHash("hashed_password");
+        // when & then
+        assertThatThrownBy(() -> authService.login(loginRequest))
+                .isInstanceOf(InvalidCredentialsException.class);
 
-        when(userRepository.findByEmail(request.getEmail())).thenReturn(Optional.of(user));
-        when(passwordEncoder.matches(request.getPassword(), "hashed_password")).thenReturn(false);
+        verify(userRepository, times(1)).findByEmail(loginRequest.getEmail());
+        verify(passwordEncoder, times(1)).matches(loginRequest.getPassword(), testUser.getPasswordHash());
+        verify(jwtUtil, never()).createToken(anyString());
+        verify(refreshTokenService, never()).generateRefreshToken(anyString());
+    }
 
-        assertThrows(InvalidCredentialsException.class, () -> authService.login(request));
+    @Test
+    @DisplayName("로그아웃 성공 테스트")
+    void logoutSuccess() {
+        // given
+        String userEmail = "test@example.com";
+        String accessToken = "access-token-123";
+        Long expirationMillis = System.currentTimeMillis() + 3600000;
+
+        given(jwtUtil.getExpirationTimeMillis(accessToken)).willReturn(expirationMillis);
+        willDoNothing().given(refreshTokenRepository).deleteAllByEmail(userEmail);
+        given(tokenBlacklistRepository.save(any(TokenBlacklist.class))).willReturn(new TokenBlacklist());
+
+        // when
+        authService.logout(userEmail, accessToken);
+
+        // then
+        verify(refreshTokenRepository, times(1)).deleteAllByEmail(userEmail);
+        verify(jwtUtil, times(1)).getExpirationTimeMillis(accessToken);
+        verify(tokenBlacklistRepository, times(1)).save(any(TokenBlacklist.class));
+
+        // TokenBlacklist 객체가 올바르게 생성되었는지 검증
+        ArgumentCaptor<TokenBlacklist> blacklistCaptor = ArgumentCaptor.forClass(TokenBlacklist.class);
+        verify(tokenBlacklistRepository).save(blacklistCaptor.capture());
+        TokenBlacklist savedBlacklist = blacklistCaptor.getValue();
+        assertThat(savedBlacklist.getToken()).isEqualTo(accessToken);
+        assertThat(savedBlacklist.getExpiresAt()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("로그아웃 - Refresh Token 삭제 확인")
+    void logout_DeletesRefreshTokens() {
+        // given
+        String userEmail = "test@example.com";
+        String accessToken = "access-token-123";
+        Long expirationMillis = System.currentTimeMillis() + 3600000;
+
+        given(jwtUtil.getExpirationTimeMillis(accessToken)).willReturn(expirationMillis);
+        willDoNothing().given(refreshTokenRepository).deleteAllByEmail(userEmail);
+        given(tokenBlacklistRepository.save(any(TokenBlacklist.class))).willReturn(new TokenBlacklist());
+
+        // when
+        authService.logout(userEmail, accessToken);
+
+        // then
+        verify(refreshTokenRepository, times(1)).deleteAllByEmail(userEmail);
+    }
+
+    @Test
+    @DisplayName("로그아웃 - Access Token 블랙리스트 추가 확인")
+    void logout_AddsTokenToBlacklist() {
+        // given
+        String userEmail = "test@example.com";
+        String accessToken = "access-token-123";
+        Long expirationMillis = System.currentTimeMillis() + 3600000;
+
+        given(jwtUtil.getExpirationTimeMillis(accessToken)).willReturn(expirationMillis);
+        willDoNothing().given(refreshTokenRepository).deleteAllByEmail(userEmail);
+        given(tokenBlacklistRepository.save(any(TokenBlacklist.class))).willReturn(new TokenBlacklist());
+
+        // when
+        authService.logout(userEmail, accessToken);
+
+        // then
+        ArgumentCaptor<TokenBlacklist> captor = ArgumentCaptor.forClass(TokenBlacklist.class);
+        verify(tokenBlacklistRepository, times(1)).save(captor.capture());
+        
+        TokenBlacklist blacklistedToken = captor.getValue();
+        assertThat(blacklistedToken.getToken()).isEqualTo(accessToken);
+        assertThat(blacklistedToken.getExpiresAt()).isNotNull();
+        assertThat(blacklistedToken.getExpiresAt()).isAfter(LocalDateTime.now());
+    }
+
+    @Test
+    @DisplayName("회원가입 시 비밀번호 암호화 확인")
+    void register_EncryptsPassword() {
+        // given
+        String rawPassword = "password123!";
+        String encodedPassword = "encodedPassword123";
+        
+        registerRequest.setPassword(rawPassword);
+        
+        given(userRepository.existsByEmail(registerRequest.getEmail())).willReturn(false);
+        given(passwordEncoder.encode(rawPassword)).willReturn(encodedPassword);
+        given(userRepository.save(any(User.class))).willReturn(testUser);
+
+        // when
+        authService.register(registerRequest);
+
+        // then
+        ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+        verify(userRepository).save(userCaptor.capture());
+        User savedUser = userCaptor.getValue();
+        
+        assertThat(savedUser.getPasswordHash()).isEqualTo(encodedPassword);
+        assertThat(savedUser.getPasswordHash()).isNotEqualTo(rawPassword);
+        verify(passwordEncoder, times(1)).encode(rawPassword);
+    }
+
+    @Test
+    @DisplayName("로그인 시 토큰 생성 순서 확인")
+    void login_GeneratesTokensInCorrectOrder() {
+        // given
+        given(userRepository.findByEmail(loginRequest.getEmail())).willReturn(Optional.of(testUser));
+        given(passwordEncoder.matches(anyString(), anyString())).willReturn(true);
+        given(jwtUtil.createToken(testUser.getEmail())).willReturn("access-token");
+        given(refreshTokenService.generateRefreshToken(testUser.getEmail())).willReturn("refresh-token");
+        given(jwtUtil.getExpirationTimeMillis(anyString())).willReturn(System.currentTimeMillis());
+
+        // when
+        authService.login(loginRequest);
+
+        // then
+        var inOrder = inOrder(jwtUtil, refreshTokenService);
+        inOrder.verify(jwtUtil).createToken(testUser.getEmail());
+        inOrder.verify(refreshTokenService).generateRefreshToken(testUser.getEmail());
+        inOrder.verify(jwtUtil).getExpirationTimeMillis(anyString());
     }
 }
