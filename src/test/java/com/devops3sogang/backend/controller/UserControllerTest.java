@@ -2,6 +2,7 @@ package com.devops3sogang.backend.controller;
 
 import com.devops3sogang.backend.document.Role;
 import com.devops3sogang.backend.document.User;
+import com.devops3sogang.backend.dto.DeleteUserRequest;
 import com.devops3sogang.backend.dto.UserProfileResponse;
 import com.devops3sogang.backend.dto.UserUpdateRequest;
 import com.devops3sogang.backend.service.UserService;
@@ -105,11 +106,17 @@ class UserControllerTest {
     void testDeleteMyAccount() throws Exception {
         when(authentication.getName()).thenReturn("user1@sogang.ac.kr");
 
-        doNothing().when(userService).deleteUser("user1@sogang.ac.kr");
+        DeleteUserRequest request = new DeleteUserRequest();
+        request.setPassword("password123");
 
-        mockMvc.perform(delete("/users/me").principal(authentication))
+        doNothing().when(userService).deleteUser(eq("user1@sogang.ac.kr"), anyString());
+
+        mockMvc.perform(delete("/users/me")
+                        .principal(authentication)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isNoContent());
 
-        verify(userService, times(1)).deleteUser("user1@sogang.ac.kr");
+        verify(userService, times(1)).deleteUser(eq("user1@sogang.ac.kr"), eq("password123"));
     }
 }
