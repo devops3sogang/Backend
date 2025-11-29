@@ -10,6 +10,8 @@ import java.util.List;
 public interface RestaurantService {
     List<Restaurant> findRestaurants(RestaurantSearchRequest request);
 
+    List<Restaurant> findAllRestaurants(); // 관리자용: 모든 식당 조회 (휴업 포함)
+
     Restaurant findRestaurantById(String id);
 
     RestaurantDetailResponse findRestaurantDetailById(String id, String currentUserId);

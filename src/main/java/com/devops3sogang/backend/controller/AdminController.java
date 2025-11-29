@@ -14,6 +14,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/admin") // Changed base path to /admin
 @RequiredArgsConstructor
@@ -24,6 +26,16 @@ public class AdminController {
 
     private final RestaurantService restaurantService;
     private final ReviewService reviewService; // Injected ReviewService
+
+    /**
+     * (관리자) 모든 맛집 목록 조회 (휴업 포함)
+     * GET /admin/restaurants
+     */
+    @GetMapping("/restaurants")
+    public ResponseEntity<List<Restaurant>> getAllRestaurants() {
+        List<Restaurant> restaurants = restaurantService.findAllRestaurants();
+        return ResponseEntity.ok(restaurants);
+    }
 
     /**
      * (관리자) 신규 맛집을 등록

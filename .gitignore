@@ -76,6 +76,7 @@ gradle.lock
 
 # Generated files
 out/
+uploads/
 
 # Editor-based HTTP Client requests
 .idea/**/httpRequests
