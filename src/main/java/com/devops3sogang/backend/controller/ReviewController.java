@@ -59,7 +59,7 @@ public class ReviewController {
      */
     @PostMapping
     @SecurityRequirement(name = "Bearer Authentication")
-    public ResponseEntity<Review> createReview(
+    public ResponseEntity<ReviewResponse> createReview(
             @Valid @RequestBody ReviewRequest request,
             Authentication authentication) {
         String userEmail = authentication.getName();
@@ -76,6 +76,7 @@ public class ReviewController {
         if (review.getRating() != null && review.getRating().getMenuRatings() != null) {
             menuRatings = review.getRating().getMenuRatings().stream()
                 .map(mr -> ReviewResponse.MenuRatingResponse.builder()
+                    .menuId(mr.getMenuId())
                     .menuName(mr.getMenuName())
                     .rating(mr.getRating())
                     .build())
@@ -112,7 +113,7 @@ public class ReviewController {
      */
     @PutMapping("/{reviewId}")
     @SecurityRequirement(name = "Bearer Authentication")
-    public ResponseEntity<Review> updateReview(
+    public ResponseEntity<ReviewResponse> updateReview(
             @PathVariable("reviewId") String reviewId,
             @Valid @RequestBody ReviewUpdateRequest request,
             Authentication authentication) {
@@ -123,7 +124,7 @@ public class ReviewController {
 
     /**
      * 리뷰 삭제
-     * DELETE /review/{reviewId}
+     * DELETE /reviews/{reviewId}
      */
     @DeleteMapping("/{reviewId}")
     @SecurityRequirement(name = "Bearer Authentication")
