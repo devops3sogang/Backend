@@ -11,9 +11,6 @@ import java.util.List;
 @Data
 @Schema(description = "리뷰 수정 요청 DTO")
 public class ReviewUpdateRequest {
-    @Schema(description = "리뷰 대상 타입 (RESTAURANT/MENU)")
-    private Type targetType;
-
     @Schema(description = "수정할 리뷰 대상 메뉴 ID 목록")
     private List<String> menuIds;
 

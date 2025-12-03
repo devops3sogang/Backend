@@ -7,8 +7,9 @@ import com.devops3sogang.backend.dto.ReviewUpdateRequest;
 import java.util.List;
 
 public interface ReviewService {
-    Review createReview(String userEmail, String restaurantId, ReviewRequest request);
+    Review createReview(String userEmail, ReviewRequest request);
     List<Review> findReviewsByRestaurantId(String restaurantId);
+    List<Review> findReviewsByMenu(String restaurantId, String menuId);
     List<Review> findRecentReviews(int limit);
     Review updateReview(String reviewId, ReviewUpdateRequest request, String userEmail);
     void deleteReview(String reviewId, String userEmail);

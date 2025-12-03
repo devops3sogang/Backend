@@ -6,10 +6,8 @@ import com.devops3sogang.backend.document.Role;
 import com.devops3sogang.backend.document.User;
 import com.devops3sogang.backend.dto.ReviewRequest;
 import com.devops3sogang.backend.dto.ReviewUpdateRequest;
-import com.devops3sogang.backend.exception.AccessDeniedException;
-import com.devops3sogang.backend.exception.RestaurantNotFoundException;
-import com.devops3sogang.backend.exception.ReviewNotFoundException;
-import com.devops3sogang.backend.exception.UserNotFoundException;
+import com.devops3sogang.backend.dto.MenuResponse;
+import com.devops3sogang.backend.exception.*;
 import com.devops3sogang.backend.repository.LikeRepository;
 import com.devops3sogang.backend.repository.RestaurantRepository;
 import com.devops3sogang.backend.repository.ReviewRepository;
@@ -30,39 +28,52 @@ public class ReviewServiceImpl implements ReviewService {
     private final RestaurantService restaurantService;
 
     @Override
-    public Review createReview(String userEmail, String restaurantId, ReviewRequest request) {
-        log.info("리뷰 작성 시작 - userEmail: {}, restaurantId: {}", userEmail, restaurantId);
+    public Review createReview(String userEmail, ReviewRequest request) {
+        log.info("리뷰 작성 시작 - userEmail: {}, restaurantId: {}", userEmail, request.getRestaurantId());
 
         User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> {
-                    log.warn("사용자를 찾을 수 없음 - email: {}", userEmail);
-                    return new UserNotFoundException(userEmail);
-                });
+                .orElseThrow(() -> new UserNotFoundException(userEmail));
 
-        var restaurant = restaurantRepository.findById(restaurantId)
-                .orElseThrow(() -> {
-                    log.warn("식당을 찾을 수 없음 - id: {}", restaurantId);
-                    return new RestaurantNotFoundException(restaurantId);
-                });
+        var restaurant = restaurantRepository.findById(request.getRestaurantId())
+                .orElseThrow(() -> new RestaurantNotFoundException(request.getRestaurantId()));
 
         Review review = new Review();
         review.setUserId(user.getId());
         review.setNickname(user.getNickname());
-
-        ReviewTarget target = new ReviewTarget();
-        target.setType("RESTAURANT");
-        target.setRestaurantId(restaurantId);
-        target.setRestaurantName(restaurant.getName());
-        review.setTarget(target);
-
         review.setContent(request.getContent());
         review.setRating(request.getRating());
         review.setImageUrls(request.getImageUrls());
         review.setLikeCount(0);
-        // createdAt, updatedAt은 @CreatedDate, @LastModifiedDate로 자동 설정됨
+
+        ReviewTarget target = new ReviewTarget();
+        target.setType(request.getTargetType().name());
+        target.setRestaurantId(request.getRestaurantId());
+        target.setRestaurantName(restaurant.getName());
+
+        if (request.getTargetType() == Type.MENU) {
+            target.setMenuIds(request.getMenuIds());
+
+            List<MenuResponse> menuList = restaurant.getMenus();
+            List<String> menuNames = request.getMenuIds().stream()
+                    .map(menuId -> menuList.stream()
+                            .filter(m -> m.getId().equals(menuId))
+                            .findFirst()
+                            .orElseThrow(() -> new MenuNotFoundInRestaurantException(menuId))
+                            .getName()
+                    ).toList();
+
+            target.setMenuNames(menuNames);
+        }
+
+        review.setTarget(target);
 
         Review saved = reviewRepository.save(review);
-        restaurantService.updateRestaurantStats(restaurantId);
+
+        restaurantService.updateRestaurantStats(request.getRestaurantId());
+        if (request.getTargetType() == Type.MENU) {
+            request.getMenuIds().forEach(menuService::updateMenuStats);
+        }
+
         log.info("리뷰 작성 완료 - reviewId: {}", saved.getId());
 
         return saved;
@@ -82,16 +93,9 @@ public class ReviewServiceImpl implements ReviewService {
     public List<Review> findRecentReviews(int limit) {
         log.info("최신 리뷰 조회 시작 - limit: {}", limit);
 
-        List<Review> reviews;
-
-        if (limit == 5) {
-            reviews = reviewRepository.findTop5ByOrderByCreatedAtDesc();
-        } else {
-            reviews = reviewRepository.findAllByOrderByCreatedAtDesc()
-                    .stream()
-                    .limit(limit)
-                    .toList();
-        }
+        List<Review> reviews = reviewRepository.findAll(
+                PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "createdAt"))
+        ).getContent();
 
         log.info("최신 리뷰 조회 완료 - 결과: {} 개", reviews.size());
         return reviews;
@@ -99,34 +103,47 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     public Review updateReview(String reviewId, ReviewUpdateRequest request, String userEmail) {
-        log.info("리뷰 수정 시작 - reviewId: {}, userEmail: {}", reviewId, userEmail);
-
         User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> {
-                    log.warn("사용자를 찾을 수 없음 - email: {}", userEmail);
-                    return new UserNotFoundException(userEmail);
-                });
+                .orElseThrow(() -> new UserNotFoundException(userEmail));
 
         Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> {
-                    log.warn("리뷰를 찾을 수 없음 - id: {}", reviewId);
-                    return new ReviewNotFoundException(reviewId);
-                });
+                .orElseThrow(() -> new ReviewNotFoundException(reviewId));
 
         if (!review.getUserId().equals(user.getId())) {
-            log.warn("리뷰 수정 권한 없음 - reviewId: {}, userId: {}", reviewId, user.getId());
             throw new AccessDeniedException("리뷰를 수정할 권한이 없습니다.");
+        }
+
+        Type targetType = review.getTarget().getType();
+
+        List<String> menuIds = request.getMenuIds();
+        if (targetType == Type.MENU) {
+            if (menuIds == null || menuIds.size() != 1) {
+                throw new IllegalArgumentException("메뉴 리뷰는 menuIds가 정확히 1개여야 합니다.");
+            }
+        }
+
+        if (targetType == Type.RESTAURANT && menuIds != null) {
+            int ratingCount = request.getRating().getMenuRatings() == null
+                    ? 0
+                    : request.getRating().getMenuRatings().size();
+            if (ratingCount != menuIds.size()) {
+                throw new IllegalArgumentException(
+                        "선택한 메뉴 수와 입력한 메뉴 평점 수가 일치해야 합니다."
+                );
+            }
+        }
+
+        if (menuIds != null) {
+            review.getTarget().setMenuIds(menuIds);
         }
 
         review.setContent(request.getContent());
         review.setRating(request.getRating());
         review.setImageUrls(request.getImageUrls());
-        // updatedAt은 @LastModifiedDate로 자동 업데이트됨
 
         Review updated = reviewRepository.save(review);
-        String restaurantId = review.getTarget().getRestaurantId();
-        restaurantService.updateRestaurantStats(restaurantId);
-        log.info("리뷰 수정 완료 - reviewId: {}", updated.getId());
+
+        restaurantService.updateRestaurantStats(review.getTarget().getRestaurantId());
 
         return updated;
     }
@@ -136,32 +153,26 @@ public class ReviewServiceImpl implements ReviewService {
         log.info("리뷰 삭제 시작 - reviewId: {}, userEmail: {}", reviewId, userEmail);
 
         User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> {
-                    log.warn("사용자를 찾을 수 없음 - email: {}", userEmail);
-                    return new UserNotFoundException(userEmail);
-                });
+                .orElseThrow(() -> new UserNotFoundException(userEmail));
 
         Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> {
-                    log.warn("리뷰를 찾을 수 없음 - id: {}", reviewId);
-                    return new ReviewNotFoundException(reviewId);
-                });
+                .orElseThrow(() -> new ReviewNotFoundException(reviewId));
 
-        // 권한 확인
         if (!review.getUserId().equals(user.getId()) && user.getRole() != Role.ADMIN) {
-            log.warn("리뷰 삭제 권한 없음 - reviewId: {}, userId: {}, role: {}", reviewId, user.getId(), user.getRole());
             throw new AccessDeniedException("리뷰를 삭제할 권한이 없습니다.");
         }
 
-        // 1️⃣ 먼저 관련 "좋아요" 데이터 삭제
         likeRepository.deleteByReviewId(reviewId);
         log.debug("리뷰 좋아요 삭제 완료 - reviewId: {}", reviewId);
 
-        // 2️⃣ 그 다음 리뷰 삭제
-        reviewRepository.delete(review);
-        log.info("리뷰 삭제 완료 - reviewId: {}", reviewId);
-
         String restaurantId = review.getTarget().getRestaurantId();
-        restaurantService.updateRestaurantStats(restaurantId);
+        reviewRepository.delete(review);
+        log.info("리뷰 삭제 완료 - reviewId: {}, restaurantId: {}", reviewId, restaurantId);
+
+        try {
+            restaurantService.updateRestaurantStats(restaurantId);
+        } catch (Exception e) {
+            log.error("식당 통계 갱신 중 오류 발생 - restaurantId: {}", restaurantId, e);
+        }
     }
 }
