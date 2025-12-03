@@ -25,15 +25,16 @@ public class DataLoader implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        // 기존 데이터 삭제 (데이터 구조가 변경되었으므로)
+        // 데이터가 이미 존재하면 초기화하지 않음 (데이터 유지)
         if (restaurantRepository.count() > 0) {
-            System.out.println("기존 데이터를 삭제합니다...");
-            reviewRepository.deleteAll();
-            restaurantRepository.deleteAll();
-            userRepository.deleteAll();
+            System.out.println("기존 데이터가 존재하여 초기화를 건너뜁니다.");
+            System.out.println("- 식당 수: " + restaurantRepository.count());
+            System.out.println("- 유저 수: " + userRepository.count());
+            System.out.println("- 리뷰 수: " + reviewRepository.count());
+            return;
         }
 
-        System.out.println("테스트 데이터를 초기화합니다...");
+        System.out.println("데이터베이스가 비어있습니다. 테스트 데이터를 초기화합니다...");
 
         // 1. 테스트 유저 + 관리자 계정 생성
         User testUser = createTestUser();
