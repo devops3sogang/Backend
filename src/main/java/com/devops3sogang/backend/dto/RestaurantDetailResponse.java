@@ -1,5 +1,6 @@
 package com.devops3sogang.backend.dto;
 
+import com.devops3sogang.backend.document.Type;
 import com.devops3sogang.backend.document.MenuItem;
 import com.devops3sogang.backend.document.RestaurantStats;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -53,10 +54,10 @@ public class RestaurantDetailResponse {
     @Schema(description = "리뷰 목록")
     private List<ReviewInfo> reviews;
 
-    @Schema(description = "생성일", example = "2025-01-01T00:00:00Z")
+    @Schema(description = "식당 정보 생성일")
     private LocalDateTime createdAt;
 
-    @Schema(description = "수정일", example = "2025-01-01T00:00:00Z")
+    @Schema(description = "식당 정보 수정일")
     private LocalDateTime updatedAt;
 
     @Data
@@ -65,32 +66,38 @@ public class RestaurantDetailResponse {
     @AllArgsConstructor
     public static class ReviewInfo {
         @JsonProperty("_id")
-        @Schema(description = "리뷰 ID", example = "507f191e810c19729de860ea")
+        @Schema(description = "리뷰 ID")
         private String id;
 
-        @Schema(description = "작성자 ID", example = "507f191e810c19729de860e1")
+        @Schema(description = "작성자 ID")
         private String userId;
 
-        @Schema(description = "작성자 닉네임", example = "김철수")
+        @Schema(description = "작성자 닉네임")
         private String nickname;
+
+        @Schema(description = "리뷰 대상 타입 (RESTAURANT/MENU)")
+        private Type targetType;
+
+        @Schema(description = "리뷰 대상 메뉴 ID 목록")
+        private List<String> menuIds;
 
         @Schema(description = "평점 정보")
         private RatingInfo rating;
 
-        @Schema(description = "리뷰 내용", example = "김밥이 정말 맛있어요! 참치가 많이 들어있습니다.")
+        @Schema(description = "리뷰 내용")
         private String content;
 
         @Schema(description = "이미지 URL 목록")
         private List<String> imageUrls;
 
-        @Schema(description = "좋아요 수", example = "15")
+        @Schema(description = "좋아요 수")
         private int likeCount;
 
-        @Schema(description = "생성일", example = "2025-01-05T10:30:00Z")
+        @Schema(description = "생성일")
         private LocalDateTime createdAt;
 
         @JsonProperty("likedByCurrentUser")
-        @Schema(description = "현재 사용자의 좋아요 여부", example = "false")
+        @Schema(description = "현재 사용자의 좋아요 여부")
         private boolean isLikedByCurrentUser;
     }
 
@@ -102,7 +109,7 @@ public class RestaurantDetailResponse {
         @Schema(description = "메뉴별 평점 목록")
         private List<MenuRatingInfo> menuRatings;
 
-        @Schema(description = "식당 전체 평점 (1~5)", example = "4")
+        @Schema(description = "식당 전체 평점 (1~5)")
         private int restaurantRating;
     }
 
@@ -111,10 +118,13 @@ public class RestaurantDetailResponse {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class MenuRatingInfo {
-        @Schema(description = "메뉴 이름", example = "참치김밥")
+        @Schema(description = "메뉴 ID")
+        private String menuId;
+
+        @Schema(description = "메뉴 이름")
         private String menuName;
 
-        @Schema(description = "메뉴 평점 (1~5)", example = "5")
+        @Schema(description = "메뉴 평점 (1~5)")
         private int rating;
     }
 }

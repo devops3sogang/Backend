@@ -17,45 +17,54 @@ import java.util.List;
 public class ReviewResponse {
 
     @JsonProperty("_id")
-    @Schema(description = "리뷰 ID", example = "507f191e810c19729de860ea")
+    @Schema(description = "리뷰 ID")
     private String id;
 
-    @Schema(description = "작성자 ID", example = "507f191e810c19729de860e1")
+    @Schema(description = "작성자 ID")
     private String userId;
 
-    @Schema(description = "작성자 닉네임", example = "김철수")
+    @Schema(description = "작성자 닉네임")
     private String nickname;
 
-    @Schema(description = "식당 ID", example = "507f1f77bcf86cd799439011")
+    @Schema(description = "식당 ID")
     private String restaurantId;
 
-    @Schema(description = "식당 이름", example = "맛있는 김밥")
+    @Schema(description = "식당 이름")
     private String restaurantName;
+
+    @Schema(description = "리뷰 대상 타입 (RESTAURANT/MENU)")
+    private Type targetType;
+    
+    @Schema(description = "메뉴 ID 목록")
+    private List<String> menuIds;
 
     @Schema(description = "평점 정보")
     private RatingsResponse ratings;
 
-    @Schema(description = "리뷰 내용", example = "김밥이 정말 맛있어요! 참치가 많이 들어있습니다.")
+    @Schema(description = "리뷰 내용")
     private String content;
 
     @Schema(description = "이미지 URL 목록")
     private List<String> imageUrls;
 
-    @Schema(description = "좋아요 수", example = "15")
+    @Schema(description = "좋아요 수")
     private int likeCount;
 
-    @Schema(description = "리뷰 작성일", example = "2025-01-05T10:30:00Z")
+    @Schema(description = "리뷰 작성일")
     private String createdAt;
 
+    @Schema(description = "리뷰 수정일")
+    private String updatedAt;
+    
     @Data
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
     public static class RatingsResponse {
-        @Schema(description = "메뉴별 평점 목록")
+        @Schema(description = "메뉴별 평점")
         private List<MenuRatingResponse> menuRatings;
 
-        @Schema(description = "식당 전체 평점 (1~5)", example = "4")
+        @Schema(description = "식당 전체 평점 (1~5)")
         private int restaurantRating;
     }
 
@@ -64,10 +73,13 @@ public class ReviewResponse {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class MenuRatingResponse {
-        @Schema(description = "메뉴 이름", example = "참치김밥")
+        @Schema(description = "메뉴 ID")
+        private String menuId;
+
+        @Schema(description = "메뉴 이름")
         private String menuName;
 
-        @Schema(description = "메뉴 평점 (1~5)", example = "5")
+        @Schema(description = "메뉴 평점 (1~5)")
         private int rating;
     }
 }
