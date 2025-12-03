@@ -4,8 +4,7 @@ import lombok.Data;
 
 @Data
 public class ReviewTarget {
-    private String type;
+    private Type type;
     private String restaurantId;
-    private String restaurantName;
-    private String menuItems;
+    private String menuId;
 }

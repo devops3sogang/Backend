@@ -5,9 +5,7 @@ import java.util.List;
 
 @Data
 public class Meal {
-    private String corner;
     private String category;
-
-    private List<String> items;
+    private List<MenuItem> items;
     private int price;
 }
