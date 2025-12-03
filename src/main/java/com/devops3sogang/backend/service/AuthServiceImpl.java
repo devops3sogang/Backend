@@ -2,8 +2,6 @@ package com.devops3sogang.backend.service;
 
 import com.devops3sogang.backend.config.jwt.JwtUtil;
 import com.devops3sogang.backend.document.User;
-import com.devops3sogang.backend.document.Role;
-import com.devops3sogang.backend.document.RefreshToken;
 import com.devops3sogang.backend.document.TokenBlacklist;
 import com.devops3sogang.backend.dto.LoginRequest;
 import com.devops3sogang.backend.dto.LoginResponse;
@@ -14,7 +12,6 @@ import com.devops3sogang.backend.exception.InvalidCredentialsException;
 import com.devops3sogang.backend.repository.UserRepository;
 import com.devops3sogang.backend.repository.RefreshTokenRepository;
 import com.devops3sogang.backend.repository.TokenBlacklistRepository;
-import com.devops3sogang.backend.service.RefreshTokenService;
 
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;

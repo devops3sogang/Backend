@@ -49,7 +49,7 @@ public class SecurityConfig {
                                 .accessDeniedHandler(customAccessDeniedHandler))
                 .authorizeHttpRequests(authorize -> authorize
                         // --- 1. 인증 불필요 경로 (가장 먼저) ---
-                        .requestMatchers("/auth/**", "/restaurants-view", "/api/on-campus-menus", "/api/on-campus-menus/**").permitAll()
+                        .requestMatchers("/auth/**", "/restaurants-view", "/on-campus-menus", "/on-campus-menus/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**",
                                         "/swagger-resources/**",
                                         "/swagger-ui.html")

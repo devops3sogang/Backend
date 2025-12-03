@@ -5,7 +5,6 @@ import com.devops3sogang.backend.document.Review;
 import com.devops3sogang.backend.document.User;
 import com.devops3sogang.backend.dto.UserProfileResponse;
 import com.devops3sogang.backend.dto.UserUpdateRequest;
-import com.devops3sogang.backend.dto.UserUpdateResponse;
 import com.devops3sogang.backend.exception.UserNotFoundException;
 import com.devops3sogang.backend.repository.LikeRepository;
 import com.devops3sogang.backend.repository.ReviewRepository;

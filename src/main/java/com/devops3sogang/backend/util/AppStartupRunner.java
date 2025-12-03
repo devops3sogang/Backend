@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -33,18 +34,19 @@ public class AppStartupRunner implements ApplicationRunner {
 
             // Python 스크립트 실행
             try {
+                // 프로젝트 루트 기준 상대 경로
+                String scriptPath = System.getProperty("user.dir") + "/../crawling/crawler.py";
                 ProcessBuilder pb = new ProcessBuilder(
-                        "python3", 
-                        "devops3sogang/crawling/crawler.py" //절대경로로 바꿔야 빌드됨
+                        "python",
+                        scriptPath
                 );
                 pb.redirectErrorStream(true);
                 Process process = pb.start();
 
-                // 스크립트 실행 로그 출력
-                try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        log.info(line);
+                // Python 출력 스트림을 소비만 하고 로그에 출력하지 않음 (한글 깨짐 방지)
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
+                    while (reader.readLine() != null) {
+                        // 출력을 읽어서 버퍼를 비우지만 로그에는 출력하지 않음
                     }
                 }
 

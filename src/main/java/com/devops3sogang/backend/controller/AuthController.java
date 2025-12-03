@@ -18,7 +18,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.authentication.BadCredentialsException;
 import java.time.LocalDateTime;
 import java.util.Map;
-import org.springframework.security.core.Authentication;
 
 @RestController
 @RequestMapping("/auth")
