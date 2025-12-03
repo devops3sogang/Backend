@@ -49,14 +49,16 @@ public class RestaurantServiceImpl implements RestaurantService {
     @Override
     public List<Restaurant> findAllRestaurants() {
         log.info("관리자: 모든 식당 조회 (휴업 포함)");
+
         List<Restaurant> restaurants = restaurantRepository.findAll();
+
         log.info("관리자: 식당 조회 완료 - 결과: {} 개", restaurants.size());
         return restaurants;
     }
 
     @Override
     public Restaurant findRestaurantById(String id) {
-        log.info("식당 상세 조회 시작 - ID: {}", id);
+        log.info("식당 검색 시작 - ID: {}", id);
 
         Restaurant restaurant = restaurantRepository.findById(id)
                 .orElseThrow(() -> {
@@ -64,7 +66,7 @@ public class RestaurantServiceImpl implements RestaurantService {
                     return new RestaurantNotFoundException(id);
                 });
 
-        log.info("식당 상세 조회 완료 - name: {}", restaurant.getName());
+        log.info("식당 검색 완료 - name: {}", restaurant.getName());
         return restaurant;
     }
 
@@ -72,34 +74,37 @@ public class RestaurantServiceImpl implements RestaurantService {
     public RestaurantDetailResponse findRestaurantDetailById(String id, String currentUserId) {
         log.info("식당 상세 조회 (리뷰 포함) 시작 - ID: {}, currentUserId: {}", id, currentUserId);
 
-        // 1. 식당 정보 조회
         Restaurant restaurant = findRestaurantById(id);
 
-        // 2. 식당의 모든 리뷰 조회
         List<Review> reviews = reviewRepository.findByTarget_RestaurantId(id);
         log.info("조회된 리뷰 수: {}", reviews.size());
 
-        // 3. 리뷰를 DTO로 변환
         List<RestaurantDetailResponse.ReviewInfo> reviewInfos = reviews.stream()
                 .map(review -> {
-                    // 현재 사용자가 이 리뷰에 좋아요를 눌렀는지 확인
                     boolean isLiked = false;
                     if (currentUserId != null) {
                         isLiked = likeRepository.findByUserIdAndReviewId(currentUserId, review.getId()).isPresent();
                     }
 
-                    // menuRatings 변환
                     List<RestaurantDetailResponse.MenuRatingInfo> menuRatingInfos = new ArrayList<>();
                     if (review.getRating() != null && review.getRating().getMenuRatings() != null) {
                         menuRatingInfos = review.getRating().getMenuRatings().stream()
-                                .map(mr -> RestaurantDetailResponse.MenuRatingInfo.builder()
-                                        .menuName(mr.getMenuName())
-                                        .rating(mr.getRating())
-                                        .build())
+                                .map(mr -> {
+                                    String latestMenuName = restaurant.getMenu().stream()
+                                            .filter(menu -> menu.getId().equals(mr.getMenuId()))
+                                            .map(MenuItem::getName)
+                                            .findFirst()
+                                            .orElse(mr.getMenuName());
+
+                                    return RestaurantDetailResponse.MenuRatingInfo.builder()
+                                            .menuId(mr.getMenuId())
+                                            .menuName(latestMenuName)
+                                            .rating(mr.getRating())
+                                            .build();
+                                })
                                 .toList();
                     }
 
-                    // rating 변환
                     RestaurantDetailResponse.RatingInfo ratingInfo = RestaurantDetailResponse.RatingInfo.builder()
                             .menuRatings(menuRatingInfos)
                             .restaurantRating(
@@ -120,7 +125,6 @@ public class RestaurantServiceImpl implements RestaurantService {
                 })
                 .toList();
 
-        // 4. RestaurantDetailResponse 생성
         RestaurantDetailResponse response = RestaurantDetailResponse.builder()
                 .id(restaurant.getId())
                 .name(restaurant.getName())
@@ -278,34 +282,31 @@ public class RestaurantServiceImpl implements RestaurantService {
 
     @Override
     public void updateRestaurantStats(String restaurantId) {
-        // 1. 해당 가게의 모든 리뷰를 DB에서 가져옵니다.
         List<Review> reviews = reviewRepository.findByTarget_RestaurantId(restaurantId);
         Restaurant restaurant = restaurantRepository.findById(restaurantId)
                 .orElseThrow(() -> new RuntimeException("Restaurant not found with id: " + restaurantId));
 
         RestaurantStats stats = restaurant.getStats();
         if (stats == null) {
-            stats = new RestaurantStats(); // stats 객체가 없는 경우를 대비
+            stats = new RestaurantStats();
         }
 
         if (reviews.isEmpty()) {
-            // 2-1. 리뷰가 없으면 통계를 0으로 초기화합니다.
             stats.setRating(0.0);
             stats.setReviewCount(0);
         } else {
-            // 2-2. 리뷰가 있으면 평균 평점을 계산합니다.
             double averageRating = reviews.stream()
-                    .mapToDouble(review -> review.getRating().getRestaurantRating())
+                    .map(Review::getRating)
+                    .filter(Objects::nonNull)
+                    .mapToDouble(r -> r.getRestaurantRating())
                     .average()
                     .orElse(0.0);
 
-            // 3. 계산된 통계를 Restaurant 객체에 업데이트합니다.
-            stats.setRating(Math.round(averageRating * 10) / 10.0); // 소수점 한 자리까지
+            stats.setRating(Math.round(averageRating * 10) / 10.0);
             stats.setReviewCount(reviews.size());
         }
 
         restaurant.setStats(stats);
-        // 4. 변경된 Restaurant 정보를 DB에 다시 저장합니다.
         restaurantRepository.save(restaurant);
     }
 }
