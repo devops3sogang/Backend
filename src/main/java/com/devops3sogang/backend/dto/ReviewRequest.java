@@ -1,10 +1,11 @@
 package com.devops3sogang.backend.dto;
 
+import com.devops3sogang.backend.document.Type;
 import com.devops3sogang.backend.document.Rating;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-
+import jakarta.validation.constraints.NotBlank;
 import java.util.List;
 
 @Data

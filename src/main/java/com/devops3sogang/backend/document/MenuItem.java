@@ -6,7 +6,7 @@ import org.springframework.data.annotation.Id;
 
 @Data
 public class MenuItem {
-    @ID
+    @Id
     private String id;
     private String name;
     private int price;
