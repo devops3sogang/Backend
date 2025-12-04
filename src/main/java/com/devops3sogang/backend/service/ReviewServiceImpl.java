@@ -100,7 +100,7 @@ public class ReviewServiceImpl implements ReviewService {
 
         // 1) target.menuId 기반 조회
         List<Review> directMatches =
-                reviewRepository.findByTarget_RestaurantIdAndTarget_MenuId(restaurantId, menuId);
+                reviewRepository.findByTarget_RestaurantIdAndTarget_MenuIdsContains(restaurantId, menuId);
 
         // 2) rating.menuRatings 기반 조회
         List<Review> ratingMatches =
