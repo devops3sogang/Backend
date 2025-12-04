@@ -3,6 +3,7 @@ package com.devops3sogang.backend.service;
 import com.devops3sogang.backend.document.Restaurant;
 import com.devops3sogang.backend.document.RestaurantStats;
 import com.devops3sogang.backend.document.Review;
+import com.devops3sogang.backend.document.MenuItem;
 import com.devops3sogang.backend.dto.RestaurantDetailResponse;
 import com.devops3sogang.backend.dto.RestaurantRequest;
 import com.devops3sogang.backend.dto.RestaurantSearchRequest;
@@ -11,7 +12,7 @@ import com.devops3sogang.backend.exception.RestaurantNotFoundException;
 import com.devops3sogang.backend.repository.LikeRepository;
 import com.devops3sogang.backend.repository.RestaurantRepository;
 import com.devops3sogang.backend.repository.ReviewRepository;
-
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -21,6 +22,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 @Service
 @RequiredArgsConstructor
@@ -90,11 +93,15 @@ public class RestaurantServiceImpl implements RestaurantService {
                     if (review.getRating() != null && review.getRating().getMenuRatings() != null) {
                         menuRatingInfos = review.getRating().getMenuRatings().stream()
                                 .map(mr -> {
+                                    Map<String, String> menuNameMap = new HashMap<>();
+                                    if (restaurant != null && restaurant.getMenu() != null) {
+                                        restaurant.getMenu().forEach(menu -> menuNameMap.put(menu.getId(), menu.getName()));
+                                    }
                                     String latestMenuName = restaurant.getMenu().stream()
                                             .filter(menu -> menu.getId().equals(mr.getMenuId()))
                                             .map(MenuItem::getName)
                                             .findFirst()
-                                            .orElse(mr.getMenuName());
+                                            .orElse(menuNameMap.get(mr.getMenuId()));
 
                                     return RestaurantDetailResponse.MenuRatingInfo.builder()
                                             .menuId(mr.getMenuId())
@@ -308,5 +315,12 @@ public class RestaurantServiceImpl implements RestaurantService {
 
         restaurant.setStats(stats);
         restaurantRepository.save(restaurant);
+    }
+
+    @Override
+    public String getRestaurantNameById(String restaurantId) {
+        return restaurantRepository.findById(restaurantId)
+                .orElseThrow(() -> new RestaurantNotFoundException(restaurantId))
+                .getName();
     }
 }

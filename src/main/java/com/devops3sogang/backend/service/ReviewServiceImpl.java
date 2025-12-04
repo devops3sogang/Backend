@@ -1,12 +1,15 @@
 package com.devops3sogang.backend.service;
 
+import com.devops3sogang.backend.document.Type;
 import com.devops3sogang.backend.document.Review;
 import com.devops3sogang.backend.document.ReviewTarget;
 import com.devops3sogang.backend.document.Role;
 import com.devops3sogang.backend.document.User;
+import com.devops3sogang.backend.document.MenuItem;
 import com.devops3sogang.backend.dto.ReviewRequest;
 import com.devops3sogang.backend.dto.ReviewUpdateRequest;
-import com.devops3sogang.backend.dto.MenuResponse;
+import com.devops3sogang.backend.dto.ReviewResponse;
+
 import com.devops3sogang.backend.exception.*;
 import com.devops3sogang.backend.repository.LikeRepository;
 import com.devops3sogang.backend.repository.RestaurantRepository;
@@ -16,6 +19,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import java.util.Set;
+import java.util.LinkedHashSet;
+import java.util.ArrayList;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+
 
 @Service
 @RequiredArgsConstructor
@@ -46,14 +55,13 @@ public class ReviewServiceImpl implements ReviewService {
         review.setLikeCount(0);
 
         ReviewTarget target = new ReviewTarget();
-        target.setType(request.getTargetType().name());
+        target.setType(request.getTargetType());
         target.setRestaurantId(request.getRestaurantId());
-        target.setRestaurantName(restaurant.getName());
 
         if (request.getTargetType() == Type.MENU) {
             target.setMenuIds(request.getMenuIds());
 
-            List<MenuResponse> menuList = restaurant.getMenus();
+            List<MenuItem> menuList = restaurant.getMenu();
             List<String> menuNames = request.getMenuIds().stream()
                     .map(menuId -> menuList.stream()
                             .filter(m -> m.getId().equals(menuId))
@@ -61,8 +69,6 @@ public class ReviewServiceImpl implements ReviewService {
                             .orElseThrow(() -> new MenuNotFoundInRestaurantException(menuId))
                             .getName()
                     ).toList();
-
-            target.setMenuNames(menuNames);
         }
 
         review.setTarget(target);
@@ -70,9 +76,6 @@ public class ReviewServiceImpl implements ReviewService {
         Review saved = reviewRepository.save(review);
 
         restaurantService.updateRestaurantStats(request.getRestaurantId());
-        if (request.getTargetType() == Type.MENU) {
-            request.getMenuIds().forEach(menuService::updateMenuStats);
-        }
 
         log.info("리뷰 작성 완료 - reviewId: {}", saved.getId());
 
@@ -87,6 +90,28 @@ public class ReviewServiceImpl implements ReviewService {
 
         log.info("식당의 리뷰 목록 조회 완료 - 결과: {} 개", reviews.size());
         return reviews;
+    }
+
+    @Override
+    public List<Review> findReviewsByMenu(String restaurantId, String menuId) {
+        if (restaurantId == null || menuId == null) {
+            throw new IllegalArgumentException("restaurantId와 menuId는 필수입니다.");
+        }
+
+        // 1) target.menuId 기반 조회
+        List<Review> directMatches =
+                reviewRepository.findByTarget_RestaurantIdAndTarget_MenuId(restaurantId, menuId);
+
+        // 2) rating.menuRatings 기반 조회
+        List<Review> ratingMatches =
+                reviewRepository.findByTarget_RestaurantIdAndRating_MenuRatings_MenuId(restaurantId, menuId);
+
+        // 중복 제거 후 반환 (두 기준에서 동시에 걸릴 수도 있음)
+        Set<Review> merged = new LinkedHashSet<>();
+        merged.addAll(directMatches);
+        merged.addAll(ratingMatches);
+
+        return new ArrayList<>(merged);
     }
 
     @Override

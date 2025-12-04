@@ -23,4 +23,6 @@ public interface RestaurantService {
     void deleteRestaurant(String restaurantId);
 
     void updateRestaurantStats(String restaurantId);
+
+    String getRestaurantNameById(String restaurantId);
 }
