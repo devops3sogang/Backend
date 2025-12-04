@@ -96,7 +96,7 @@ public class RestaurantController {
             @Valid @RequestBody ReviewRequest request,
             Authentication authentication) {
         String userEmail = authentication.getName();
-        Review newReview = reviewService.createReview(userEmail, restaurantId, request);
+        Review newReview = reviewService.createReview(userEmail, request);
         return ResponseEntity.status(201).body(newReview);
     }
 }
