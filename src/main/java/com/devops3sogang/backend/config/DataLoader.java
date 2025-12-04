@@ -25,34 +25,22 @@ public class DataLoader implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        // 데이터가 이미 존재하면 초기화하지 않음 (데이터 유지)
         if (restaurantRepository.count() > 0) {
             System.out.println("기존 데이터가 존재하여 초기화를 건너뜁니다.");
-            System.out.println("- 식당 수: " + restaurantRepository.count());
-            System.out.println("- 유저 수: " + userRepository.count());
-            System.out.println("- 리뷰 수: " + reviewRepository.count());
             return;
         }
 
-        System.out.println("데이터베이스가 비어있습니다. 테스트 데이터를 초기화합니다...");
+        System.out.println("DB 비어있음 → Seed 데이터 생성");
 
-        // 1. 테스트 유저 + 관리자 계정 생성
         User testUser = createTestUser();
-        User adminUser = createAdminUser(); // 관리자 생성
+        User adminUser = createAdminUser();
 
-        // 2. 가게 2곳 생성
-        Restaurant restaurant1 = createRestaurant1();
-        Restaurant restaurant2 = createRestaurant2();
+        Restaurant restaurant1 = createRestaurantKimchi();
+        Restaurant restaurant2 = createRestaurantTonkatsu();
 
-        // 3. 리뷰 4개 생성 (각 가게에 2개씩)
         createReviews(testUser, restaurant1, restaurant2);
 
-        System.out.println("테스트 데이터 초기화 완료!");
-        System.out.println("- 유저: " + testUser.getEmail());
-        System.out.println("- 관리자: " + adminUser.getEmail());
-        System.out.println("- 가게 1: " + restaurant1.getName());
-        System.out.println("- 가게 2: " + restaurant2.getName());
-        System.out.println("- 리뷰: 4개");
+        System.out.println("Seed 완료");
     }
 
     private User createTestUser() {
@@ -66,7 +54,6 @@ public class DataLoader implements CommandLineRunner {
         return userRepository.save(user);
     }
 
-    // 관리자 계정 생성
     private User createAdminUser() {
         User admin = new User();
         admin.setEmail("admin@sogang.ac.kr");
@@ -78,27 +65,18 @@ public class DataLoader implements CommandLineRunner {
         return userRepository.save(admin);
     }
 
-    private Restaurant createRestaurant1() {
+    private Restaurant createRestaurantKimchi() {
         Restaurant restaurant = new Restaurant();
         restaurant.setName("맛있는 김치찌개");
         restaurant.setType("OFF_CAMPUS");
         restaurant.setCategory("한식");
         restaurant.setAddress("서울시 마포구 백범로 35");
-
-        // 위치 설정 (서강대 근처 좌표)
         restaurant.setLocation(new GeoJsonPoint(126.9370, 37.5509));
-
         restaurant.setImageUrl("https://example.com/images/kimchi-restaurant.jpg");
         restaurant.setActive(true);
 
-        // 통계 초기화
-        RestaurantStats stats = new RestaurantStats();
-        stats.setRating(0.0);
-        stats.setReviewCount(0);
-        stats.setLikeCount(0);
-        restaurant.setStats(stats);
+        restaurant.setStats(new RestaurantStats(0.0, 0, 0));
 
-        // 메뉴 추가
         MenuItem menu1 = new MenuItem();
         menu1.setName("김치찌개");
         menu1.setPrice(8000);
@@ -114,31 +92,21 @@ public class DataLoader implements CommandLineRunner {
         restaurant.setMenu(Arrays.asList(menu1, menu2, menu3));
         restaurant.setCreatedAt(LocalDateTime.now());
         restaurant.setUpdatedAt(LocalDateTime.now());
-
         return restaurantRepository.save(restaurant);
     }
 
-    private Restaurant createRestaurant2() {
+    private Restaurant createRestaurantTonkatsu() {
         Restaurant restaurant = new Restaurant();
         restaurant.setName("서강 돈까스");
         restaurant.setType("OFF_CAMPUS");
         restaurant.setCategory("일식");
         restaurant.setAddress("서울시 마포구 신수동 1-1");
-
-        // 위치 설정 (서강대 근처 좌표)
         restaurant.setLocation(new GeoJsonPoint(126.9390, 37.5515));
-
         restaurant.setImageUrl("https://example.com/images/tonkatsu-restaurant.jpg");
         restaurant.setActive(true);
 
-        // 통계 초기화
-        RestaurantStats stats = new RestaurantStats();
-        stats.setRating(0.0);
-        stats.setReviewCount(0);
-        stats.setLikeCount(0);
-        restaurant.setStats(stats);
+        restaurant.setStats(new RestaurantStats(0.0, 0, 0));
 
-        // 메뉴 추가
         MenuItem menu1 = new MenuItem();
         menu1.setName("등심돈까스");
         menu1.setPrice(10000);
@@ -154,139 +122,56 @@ public class DataLoader implements CommandLineRunner {
         restaurant.setMenu(Arrays.asList(menu1, menu2, menu3));
         restaurant.setCreatedAt(LocalDateTime.now());
         restaurant.setUpdatedAt(LocalDateTime.now());
-
         return restaurantRepository.save(restaurant);
     }
 
-    private void createReviews(User user, Restaurant restaurant1, Restaurant restaurant2) {
-        // 가게 1 리뷰 1
-        Review review1 = new Review();
-        review1.setUserId(user.getId());
-        review1.setNickname(user.getNickname());
+    private void createReviews(User user, Restaurant r1, Restaurant r2) {
 
-        ReviewTarget target1 = new ReviewTarget();
-        target1.setType("RESTAURANT");
-        target1.setRestaurantId(restaurant1.getId());
-        target1.setRestaurantName(restaurant1.getName());
-        target1.setMenuItems("김치찌개");
-        review1.setTarget(target1);
+        // restaurant1 메뉴 ID 조회
+        String kimchiId = r1.getMenu().get(0).getId();
+        String porkId = r1.getMenu().get(2).getId();
 
-        Rating rating1 = new Rating();
-        Rating.MenuRating menuRating1 = new Rating.MenuRating();
-        menuRating1.setMenuName("김치찌개");
-        menuRating1.setRating(5);
-        rating1.setMenuRatings(Arrays.asList(menuRating1));
-        rating1.setRestaurantRating(4);
-        review1.setRating(rating1);
+        // restaurant2 메뉴 ID 조회
+        String tonkatsuId = r2.getMenu().get(0).getId();
+        String cheeseId = r2.getMenu().get(1).getId();
 
-        review1.setContent("김치찌개가 정말 맛있어요! 국물이 깊고 진해요. 서강대 근처에서 최고입니다.");
-        review1.setImageUrls(Arrays.asList("https://example.com/images/review1.jpg"));
-        review1.setLikeCount(2);
-        review1.setCreatedAt(LocalDateTime.now().minusDays(5));
-        review1.setUpdatedAt(LocalDateTime.now().minusDays(5));
-        reviewRepository.save(review1);
+        Review review1 = buildReview(user, r1.getId(), List.of(kimchiId), 5, 4,
+                "김치찌개가 정말 맛있어요! 국물이 깊고 진해요.");
+        Review review2 = buildReview(user, r1.getId(), List.of(porkId), 4, 4,
+                "제육볶음도 맛있네요. 가성비 좋아요!");
+        Review review3 = buildReview(user, r2.getId(), List.of(tonkatsuId), 5, 5,
+                "돈까스 바삭하고 고기도 두툼. 데이트하기 좋습니다.");
+        Review review4 = buildReview(user, r2.getId(), List.of(cheeseId), 5, 4,
+                "치즈돈까스 치즈가 쭉 늘어나요. 맛있지만 가격은 살짝 높음.");
 
-        // 가게 1 리뷰 2
-        Review review2 = new Review();
-        review2.setUserId(user.getId());
-        review2.setNickname(user.getNickname());
-
-        ReviewTarget target2 = new ReviewTarget();
-        target2.setType("RESTAURANT");
-        target2.setRestaurantId(restaurant1.getId());
-        target2.setRestaurantName(restaurant1.getName());
-        target2.setMenuItems("제육볶음");
-        review2.setTarget(target2);
-
-        Rating rating2 = new Rating();
-        Rating.MenuRating menuRating2 = new Rating.MenuRating();
-        menuRating2.setMenuName("제육볶음");
-        menuRating2.setRating(4);
-        rating2.setMenuRatings(Arrays.asList(menuRating2));
-        rating2.setRestaurantRating(4);
-        review2.setRating(rating2);
-
-        review2.setContent("제육볶음도 맛있네요. 가성비 좋아요!");
-        review2.setImageUrls(null);
-        review2.setLikeCount(0);
-        review2.setCreatedAt(LocalDateTime.now().minusDays(3));
-        review2.setUpdatedAt(LocalDateTime.now().minusDays(3));
-        reviewRepository.save(review2);
-
-        // 가게 2 리뷰 1
-        Review review3 = new Review();
-        review3.setUserId(user.getId());
-        review3.setNickname(user.getNickname());
-
-        ReviewTarget target3 = new ReviewTarget();
-        target3.setType("RESTAURANT");
-        target3.setRestaurantId(restaurant2.getId());
-        target3.setRestaurantName(restaurant2.getName());
-        target3.setMenuItems("등심돈까스");
-        review3.setTarget(target3);
-
-        Rating rating3 = new Rating();
-        Rating.MenuRating menuRating3 = new Rating.MenuRating();
-        menuRating3.setMenuName("등심돈까스");
-        menuRating3.setRating(5);
-        rating3.setMenuRatings(Arrays.asList(menuRating3));
-        rating3.setRestaurantRating(5);
-        review3.setRating(rating3);
-
-        review3.setContent("돈까스가 바삭하고 고기가 두툼해요. 분위기도 좋고 데이트하기 좋습니다.");
-        review3.setImageUrls(Arrays.asList("https://example.com/images/review3.jpg"));
-        review3.setLikeCount(0);
-        review3.setCreatedAt(LocalDateTime.now().minusDays(2));
-        review3.setUpdatedAt(LocalDateTime.now().minusDays(2));
-        reviewRepository.save(review3);
-
-        // 가게 2 리뷰 2
-        Review review4 = new Review();
-        review4.setUserId(user.getId());
-        review4.setNickname(user.getNickname());
-
-        ReviewTarget target4 = new ReviewTarget();
-        target4.setType("RESTAURANT");
-        target4.setRestaurantId(restaurant2.getId());
-        target4.setRestaurantName(restaurant2.getName());
-        target4.setMenuItems("치즈돈까스");
-        review4.setTarget(target4);
-
-        Rating rating4 = new Rating();
-        Rating.MenuRating menuRating4 = new Rating.MenuRating();
-        menuRating4.setMenuName("치즈돈까스");
-        menuRating4.setRating(5);
-        rating4.setMenuRatings(Arrays.asList(menuRating4));
-        rating4.setRestaurantRating(4);
-        review4.setRating(rating4);
-
-        review4.setContent("치즈돈까스 치즈가 쭉쭉 늘어나요! 맛있습니다. 다만 가격이 조금 비싼 편.");
-        review4.setImageUrls(null);
-        review4.setLikeCount(0);
-        review4.setCreatedAt(LocalDateTime.now().minusDays(1));
-        review4.setUpdatedAt(LocalDateTime.now().minusDays(1));
-        reviewRepository.save(review4);
-
-        // 레스토랑 통계 업데이트
-        updateRestaurantStats(restaurant1, Arrays.asList(review1, review2));
-        updateRestaurantStats(restaurant2, Arrays.asList(review3, review4));
+        reviewRepository.saveAll(List.of(review1, review2, review3, review4));
     }
 
-    private void updateRestaurantStats(Restaurant restaurant, List<Review> reviews) {
-        RestaurantStats stats = restaurant.getStats();
-        if (stats == null) {
-            stats = new RestaurantStats();
-            restaurant.setStats(stats);
-        }
-        stats.setReviewCount(reviews.size());
+    private Review buildReview(User user, String restaurantId, List<String> menuIds,
+                               int menuRatingValue, int restaurantRatingValue, String content) {
+        Review review = new Review();
+        review.setUserId(user.getId());
+        review.setNickname(user.getNickname());
 
-        // 평균 평점 계산 (restaurantRating의 평균)
-        double avgRating = reviews.stream()
-                .mapToDouble(r -> r.getRating().getRestaurantRating())
-                .average()
-                .orElse(0.0);
-        stats.setRating(Math.round(avgRating * 10) / 10.0); // 소수점 첫째자리까지
+        ReviewTarget target = new ReviewTarget();
+        target.setType(Type.RESTAURANT);
+        target.setRestaurantId(restaurantId);
+        target.setMenuIds(menuIds);
+        review.setTarget(target);
 
-        restaurantRepository.save(restaurant);
+        Rating rating = new Rating();
+        Rating.MenuRating menuRating = new Rating.MenuRating();
+        menuRating.setMenuId(menuIds.get(0));
+        menuRating.setRating(menuRatingValue);
+        rating.setMenuRatings(List.of(menuRating));
+        rating.setRestaurantRating(restaurantRatingValue);
+        review.setRating(rating);
+
+        review.setContent(content);
+        review.setImageUrls(null);
+        review.setLikeCount(0);
+        review.setCreatedAt(LocalDateTime.now());
+        review.setUpdatedAt(LocalDateTime.now());
+        return review;
     }
 }
