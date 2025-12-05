@@ -8,9 +8,9 @@ import org.springframework.data.mongodb.repository.Query;
 import java.util.List;
 
 public interface OnCampusMenuRepository extends MongoRepository<OnCampusMenu, String> {
-    @Query("{'weekStartDate': ?0}")
-    List<OnCampusMenu> findByWeekStartDate(String weekStartDate);
+    @Query("{ 'restaurantId': ?0, 'weekStartDate': ?1 }")
+    List<OnCampusMenu> findByRestaurantIdAndWeekStartDate(String restaurantId, String weekStartDate);
 
-    @Query("{'dailyMenus.date': ?0}")
-    List<OnCampusMenu> findByDailyMenusDate(String date);
+    @Query("{ 'restaurantId': ?0, 'dailyMenus.date': ?1 }")
+    List<OnCampusMenu> findByRestaurantIdAndDailyMenusDate(String restaurantId, String date);
 }

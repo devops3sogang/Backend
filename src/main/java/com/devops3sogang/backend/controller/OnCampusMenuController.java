@@ -29,7 +29,8 @@ public class OnCampusMenuController {
      */
     @GetMapping
     public ResponseEntity<OnCampusMenuResponse> getMenuByDate(@RequestParam String date) {
-        List<OnCampusMenu> menus = onCampusMenuRepository.findByDailyMenusDate(date);
+        String restaurantId = "MAIN_CAMPUS";
+        List<OnCampusMenu> menus = onCampusMenuRepository.findByRestaurantIdAndDailyMenusDate(restaurantId, date);
 
         if (menus.isEmpty()) {
             return ResponseEntity.notFound().build();

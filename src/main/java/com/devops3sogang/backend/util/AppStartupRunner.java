@@ -26,8 +26,9 @@ public class AppStartupRunner implements ApplicationRunner {
         LocalDate today = LocalDate.now();
         LocalDate monday = today.with(DayOfWeek.MONDAY);
         String currentWeekStartDate = monday.format(DateTimeFormatter.ISO_LOCAL_DATE);
+        String restaurantId = "MAIN_CAMPUS";
 
-        boolean menuExists = !onCampusMenuRepository.findByWeekStartDate(currentWeekStartDate).isEmpty();
+        boolean menuExists = !onCampusMenuRepository.findByRestaurantIdAndWeekStartDate(restaurantId, currentWeekStartDate).isEmpty();
 
         if (!menuExists) {
             log.info("이번 주 메뉴 데이터가 DB에 없습니다. 초기 데이터 크롤링을 실행합니다.");
