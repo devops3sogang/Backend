@@ -1,13 +1,14 @@
 package com.devops3sogang.backend.controller;
 
+import com.devops3sogang.backend.document.MenuItem;
 import com.devops3sogang.backend.document.Restaurant;
 import com.devops3sogang.backend.document.Review;
 import com.devops3sogang.backend.document.SortBy;
 import com.devops3sogang.backend.dto.RestaurantDetailResponse;
 import com.devops3sogang.backend.dto.RestaurantSearchRequest;
 import com.devops3sogang.backend.dto.ReviewRequest;
+import com.devops3sogang.backend.repository.RestaurantRepository;
 import com.devops3sogang.backend.service.RestaurantService;
-import com.devops3sogang.backend.service.ReviewService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -24,7 +25,7 @@ import java.util.List;
 @Tag(name = "Restaurant Controller", description = "식당 전용 API")
 public class RestaurantController {
     private final RestaurantService restaurantService;
-    private final ReviewService reviewService;
+    private final RestaurantRepository restaurantRepository;
 
     /**
      * 맛집 목록 조회 (필터링 및 거리 기반 검색 가능)
@@ -83,5 +84,12 @@ public class RestaurantController {
 
         RestaurantDetailResponse response = restaurantService.findRestaurantDetailById(restaurantId, currentUserId);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{restaurantId}/menu")
+    public ResponseEntity<List<MenuItem>> getMenu(@PathVariable String restaurantId) {
+        return restaurantRepository.findById(restaurantId)
+            .map(restaurant -> ResponseEntity.ok(restaurant.getMenu()))
+            .orElse(ResponseEntity.notFound().build());
     }
 }
