@@ -10,6 +10,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
 
+import java.util.UUID;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -78,14 +79,17 @@ public class DataLoader implements CommandLineRunner {
         restaurant.setStats(new RestaurantStats(0.0, 0, 0));
 
         MenuItem menu1 = new MenuItem();
+        menu1.setId(UUID.randomUUID().toString());
         menu1.setName("김치찌개");
         menu1.setPrice(8000);
 
         MenuItem menu2 = new MenuItem();
+        menu2.setId(UUID.randomUUID().toString());
         menu2.setName("된장찌개");
         menu2.setPrice(8000);
 
         MenuItem menu3 = new MenuItem();
+        menu3.setId(UUID.randomUUID().toString());
         menu3.setName("제육볶음");
         menu3.setPrice(9000);
 
@@ -108,14 +112,17 @@ public class DataLoader implements CommandLineRunner {
         restaurant.setStats(new RestaurantStats(0.0, 0, 0));
 
         MenuItem menu1 = new MenuItem();
+        menu1.setId(UUID.randomUUID().toString());
         menu1.setName("등심돈까스");
         menu1.setPrice(10000);
 
         MenuItem menu2 = new MenuItem();
+        menu2.setId(UUID.randomUUID().toString());
         menu2.setName("치즈돈까스");
         menu2.setPrice(11000);
 
         MenuItem menu3 = new MenuItem();
+        menu3.setId(UUID.randomUUID().toString());
         menu3.setName("카레돈까스");
         menu3.setPrice(10500);
 
