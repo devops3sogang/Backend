@@ -71,6 +71,7 @@ public class SecurityConfig {
                         .authenticated()
                         .requestMatchers(HttpMethod.POST, "/reviews/{reviewId}/like")
                         .authenticated()
+                        .requestMatchers(HttpMethod.POST, "/reviews").authenticated()
 
                         // --- 4. GET 요청은 대부분 허용 (마지막에) ---
                         .requestMatchers(HttpMethod.GET).permitAll()
