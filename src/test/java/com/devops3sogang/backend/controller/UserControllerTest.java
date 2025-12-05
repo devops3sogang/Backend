@@ -80,7 +80,7 @@ class UserControllerTest {
         review1.setContent("좋은 제품입니다");
         Rating rating1 = new Rating();
         Rating.MenuRating menuRating1 = new Rating.MenuRating();
-        menuRating1.setMenuName("메뉴1");
+        menuRating1.setMenuId("menu1");
         menuRating1.setRating(5);
         rating1.setMenuRatings(List.of(menuRating1));
         rating1.setRestaurantRating(5);
@@ -92,7 +92,7 @@ class UserControllerTest {
         review2.setContent("추천합니다");
         Rating rating2 = new Rating();
         Rating.MenuRating menuRating2 = new Rating.MenuRating();
-        menuRating2.setMenuName("메뉴2");
+        menuRating2.setMenuId("menu2");
         menuRating2.setRating(4);
         rating2.setMenuRatings(List.of(menuRating2));
         rating2.setRestaurantRating(4);
@@ -107,7 +107,7 @@ class UserControllerTest {
         likedReview1.setContent("유용한 리뷰");
         Rating rating3 = new Rating();
         Rating.MenuRating menuRating3 = new Rating.MenuRating();
-        menuRating3.setMenuName("메뉴1");
+        menuRating3.setMenuId("menu1");
         menuRating3.setRating(3);
         rating3.setMenuRatings(List.of(menuRating3));
         rating3.setRestaurantRating(4);

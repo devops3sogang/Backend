@@ -71,7 +71,7 @@ public class RestaurantCustomRepositoryImpl implements RestaurantCustomRepositor
 
         if (sortBy == SortBy.RATING) {
             Query query = new Query();
-
+            query.addCriteria(Criteria.where("isActive").is(true));
             if (hasCategory) {
                 query.addCriteria(Criteria.where("category").is(category));
             }
@@ -85,7 +85,7 @@ public class RestaurantCustomRepositoryImpl implements RestaurantCustomRepositor
 
         if (sortBy == SortBy.POPULAR) {
             Query query = new Query();
-
+            query.addCriteria(Criteria.where("isActive").is(true));
             if (hasCategory) {
                 query.addCriteria(Criteria.where("category").is(category));
             }
@@ -108,6 +108,8 @@ public class RestaurantCustomRepositoryImpl implements RestaurantCustomRepositor
 
         Query query = new Query();
 
+        query.addCriteria(Criteria.where("isActive").is(true));
+
         if (hasCategory) {
             query.addCriteria(Criteria.where("category").is(category));
         }
@@ -126,10 +128,11 @@ public class RestaurantCustomRepositoryImpl implements RestaurantCustomRepositor
         }
         
         // 카테고리 필터만 적용
+        Criteria criteria = Criteria.where("isActive").is(true);
         if (category != null && !category.isBlank()) {
-            Criteria criteria = Criteria.where("category").is(category);
-            nearQuery.query(Query.query(criteria));
+            criteria = criteria.and("category").is(category);
         }
+        nearQuery.query(Query.query(criteria));
         // 카테고리 필터가 없으면 모든 식당 조회
         
         // 거리순으로 정렬되어 반환됨
