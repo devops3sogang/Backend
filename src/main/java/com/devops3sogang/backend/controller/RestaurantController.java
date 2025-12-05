@@ -84,19 +84,4 @@ public class RestaurantController {
         RestaurantDetailResponse response = restaurantService.findRestaurantDetailById(restaurantId, currentUserId);
         return ResponseEntity.ok(response);
     }
-
-    /**
-     * 특정 맛집에 리뷰 작성
-     * POST /restaurants/{restaurantId}/reviews
-     */
-    @PostMapping("/{restaurantId}/reviews")
-    @SecurityRequirement(name = "Bearer Authentication")
-    public ResponseEntity<Review> createReview(
-            @PathVariable("restaurantId") String restaurantId,
-            @Valid @RequestBody ReviewRequest request,
-            Authentication authentication) {
-        String userEmail = authentication.getName();
-        Review newReview = reviewService.createReview(userEmail, request);
-        return ResponseEntity.status(201).body(newReview);
-    }
 }
