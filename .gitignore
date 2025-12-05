@@ -84,6 +84,9 @@ uploads/
 # System files
 .DS_Store
 
+# Environment variables (보안)
+.env
+
 ### VisualStudioCode ###
 .vscode/
 !.vscode/settings.json

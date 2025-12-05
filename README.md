@@ -70,10 +70,10 @@ pip install -r requirements.txt
 
 ```Properties
 # MongoDB 연결 설정
-spring.data.mongodb.uri=mongodb://localhost:27017/campus_food
+spring.data.mongodb.uri=${MONGODB_URI}
 
 # JWT 시크릿 키 (반드시 길고 복잡한 랜덤 문자열로 교체)
-jwt.secret=n2r5u8x/A?D(G+KbPeShVmYp3s6v9y$B&E)H@McQfTjWnZq4t7w!z%C*F-JaNdRg
+jwt.secret=${JWT_SECRET}
 ```
 
 #### 4. 애플리케이션 빌드 및 실행
@@ -81,12 +81,12 @@ jwt.secret=n2r5u8x/A?D(G+KbPeShVmYp3s6v9y$B&E)H@McQfTjWnZq4t7w!z%C*F-JaNdRg
 - IntelliJ IDEA에서 DevOps3SogangApplication.java 파일을 직접 실행하거나, 아래 명령어를 사용합니다.
 
 ```Bash
-1. ./gradlew build
+1. 프로젝트를 빌드해서 JAR 만들고 터미널에서 바로 실행:
+./gradlew build
 
-2. 터미널에서 바로 실행:
 java -jar build/libs/backend-0.0.1-SNAPSHOT.jar
 
-또는 Gradle로 실행:
+2. 코드를 바로 실행(Spring Boot 애플리케이션 실행):
 ./gradlew bootRun
 ```
 
