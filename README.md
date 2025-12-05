@@ -81,12 +81,12 @@ jwt.secret=${JWT_SECRET}
 - IntelliJ IDEA에서 DevOps3SogangApplication.java 파일을 직접 실행하거나, 아래 명령어를 사용합니다.
 
 ```Bash
-1. 프로젝트를 빌드해서 JAR 만들고 터미널에서 바로 실행:
+방법 1. 프로젝트를 빌드해서 JAR 만들고 터미널에서 바로 실행:
 ./gradlew build
 
 java -jar build/libs/backend-0.0.1-SNAPSHOT.jar
 
-2. 코드를 바로 실행(Spring Boot 애플리케이션 실행):
+방법 2. 코드를 바로 실행(Spring Boot 애플리케이션 실행):
 ./gradlew bootRun
 ```
 
