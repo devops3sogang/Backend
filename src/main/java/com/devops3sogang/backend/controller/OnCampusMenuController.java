@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -30,7 +31,11 @@ public class OnCampusMenuController {
     @GetMapping
     public ResponseEntity<OnCampusMenuResponse> getMenuByDate(@RequestParam String date) {
         String restaurantId = "MAIN_CAMPUS";
-        List<OnCampusMenu> menus = onCampusMenuRepository.findByRestaurantIdAndDailyMenusDate(restaurantId, date);
+        LocalDate input = LocalDate.parse(date);
+
+        LocalDate weekStart = input.minusDays(input.getDayOfWeek().getValue() - 1);
+
+        List<OnCampusMenu> menus = onCampusMenuRepository.findByRestaurantIdAndWeekStartDate(restaurantId, weekStart.toString());
 
         if (menus.isEmpty()) {
             return ResponseEntity.notFound().build();
