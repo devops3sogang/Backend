@@ -33,6 +33,7 @@ sonarqube {
         property "sonar.projectKey", "backend"
         property "sonar.host.url", sonarHostUrl
         property "sonar.login", sonarToken
+				property "sonar.java.binaries", "$buildDir/classes/java/main"
     }
 }
 
