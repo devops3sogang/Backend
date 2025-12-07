@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
-
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -61,14 +60,20 @@ public class ReviewServiceImpl implements ReviewService {
         if (request.getTargetType() == Type.MENU) {
             target.setMenuIds(request.getMenuIds());
 
+            // 메뉴 ID validation (Restaurant의 menu 필드에 있는 경우만)
+            // OnCampusMenu의 메뉴는 별도 document에 있으므로 validation skip
             List<MenuItem> menuList = restaurant.getMenu();
-            List<String> menuNames = request.getMenuIds().stream()
-                    .map(menuId -> menuList.stream()
-                            .filter(m -> m.getId().equals(menuId))
-                            .findFirst()
-                            .orElseThrow(() -> new MenuNotFoundInRestaurantException(menuId))
-                            .getName()
-                    ).toList();
+            if (menuList != null && !menuList.isEmpty()) {
+                request.getMenuIds().forEach(menuId -> {
+                    boolean exists = menuList.stream()
+                            .anyMatch(m -> m.getId().equals(menuId));
+                    if (!exists) {
+                        throw new MenuNotFoundInRestaurantException(menuId);
+                    }
+                });
+            }
+            // restaurant.getMenu()이 null이거나 비어있으면 validation skip
+            // (OnCampusMenu 등 별도 document에 메뉴가 있는 경우)
         }
 
         review.setTarget(target);
@@ -99,12 +104,12 @@ public class ReviewServiceImpl implements ReviewService {
         }
 
         // 1) target.menuId 기반 조회
-        List<Review> directMatches =
-                reviewRepository.findByTarget_RestaurantIdAndTarget_MenuIdsContains(restaurantId, menuId);
+        List<Review> directMatches = reviewRepository.findByTarget_RestaurantIdAndTarget_MenuIdsContains(restaurantId,
+                menuId);
 
         // 2) rating.menuRatings 기반 조회
-        List<Review> ratingMatches =
-                reviewRepository.findByTarget_RestaurantIdAndRating_MenuRatings_MenuId(restaurantId, menuId);
+        List<Review> ratingMatches = reviewRepository
+                .findByTarget_RestaurantIdAndRating_MenuRatings_MenuId(restaurantId, menuId);
 
         // 중복 제거 후 반환 (두 기준에서 동시에 걸릴 수도 있음)
         Set<Review> merged = new LinkedHashSet<>();
@@ -119,8 +124,7 @@ public class ReviewServiceImpl implements ReviewService {
         log.info("최신 리뷰 조회 시작 - limit: {}", limit);
 
         List<Review> reviews = reviewRepository.findAll(
-                PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "createdAt"))
-        ).getContent();
+                PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "createdAt"))).getContent();
 
         log.info("최신 리뷰 조회 완료 - 결과: {} 개", reviews.size());
         return reviews;
@@ -153,8 +157,7 @@ public class ReviewServiceImpl implements ReviewService {
                     : request.getRating().getMenuRatings().size();
             if (ratingCount != menuIds.size()) {
                 throw new IllegalArgumentException(
-                        "선택한 메뉴 수와 입력한 메뉴 평점 수가 일치해야 합니다."
-                );
+                        "선택한 메뉴 수와 입력한 메뉴 평점 수가 일치해야 합니다.");
             }
         }
 
