@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -95,10 +96,14 @@ public class RestaurantServiceImpl implements RestaurantService {
                                 .map(mr -> {
                                     Map<String, String> menuNameMap = new HashMap<>();
                                     if (restaurant != null && restaurant.getMenu() != null) {
-                                        restaurant.getMenu().forEach(menu -> menuNameMap.put(menu.getId(), menu.getName()));
+                                        restaurant.getMenu().forEach(menu -> {
+                                            if (menu.getId() != null) {
+                                                menuNameMap.put(menu.getId(), menu.getName());
+                                            }
+                                        });
                                     }
                                     String latestMenuName = restaurant.getMenu().stream()
-                                            .filter(menu -> menu.getId().equals(mr.getMenuId()))
+                                            .filter(menu -> menu.getId() != null && menu.getId().equals(mr.getMenuId()))
                                             .map(MenuItem::getName)
                                             .findFirst()
                                             .orElse(menuNameMap.get(mr.getMenuId()));
@@ -179,7 +184,18 @@ public class RestaurantServiceImpl implements RestaurantService {
         restaurant.setCategory(request.getCategory());
         restaurant.setAddress(request.getAddress());
         restaurant.setLocation(toGeoJsonPoint(request.getLocation()));
-        restaurant.setMenu(request.getMenu());
+
+        // 메뉴 아이템에 ID 자동 생성
+        List<MenuItem> menuWithIds = request.getMenu().stream()
+                .map(menuItem -> {
+                    if (menuItem.getId() == null || menuItem.getId().isEmpty()) {
+                        menuItem.setId(UUID.randomUUID().toString());
+                    }
+                    return menuItem;
+                })
+                .toList();
+        restaurant.setMenu(menuWithIds);
+
         restaurant.setImageUrl(request.getImageUrl());
         // isActive 값이 null이면 기본값 true, 아니면 요청값 사용
         restaurant.setActive(request.getIsActive() == null || request.getIsActive());
@@ -233,7 +249,17 @@ public class RestaurantServiceImpl implements RestaurantService {
         restaurant.setCategory(request.getCategory());
         restaurant.setAddress(request.getAddress());
         restaurant.setLocation(toGeoJsonPoint(request.getLocation()));
-        restaurant.setMenu(request.getMenu());
+
+        // 메뉴 아이템에 ID 자동 생성 (기존 ID는 유지, 새 아이템만 생성)
+        List<MenuItem> menuWithIds = request.getMenu().stream()
+                .map(menuItem -> {
+                    if (menuItem.getId() == null || menuItem.getId().isEmpty()) {
+                        menuItem.setId(UUID.randomUUID().toString());
+                    }
+                    return menuItem;
+                })
+                .toList();
+        restaurant.setMenu(menuWithIds);
 
         if (request.getImageUrl() != null) {
             restaurant.setImageUrl(request.getImageUrl());
