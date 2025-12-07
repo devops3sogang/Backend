@@ -25,17 +25,6 @@ WORKDIR /app
 # Copy the built JAR from builder stage
 COPY --from=builder /app/build/libs/*.jar app.jar
 
-# Copy Python crawler and requirements
-COPY crawler.py requirements.txt ./
-
-# Install Python and dependencies for crawler
-RUN apk add --no-cache python3 py3-pip && \
-    python3 -m venv /opt/venv && \
-    /opt/venv/bin/pip install --no-cache-dir -r requirements.txt
-
-# Set Python virtual environment in PATH
-ENV PATH="/opt/venv/bin:$PATH"
-
 # Expose port 8080
 EXPOSE 8080
 

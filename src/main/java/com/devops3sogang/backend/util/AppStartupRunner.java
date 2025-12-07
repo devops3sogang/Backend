@@ -5,14 +5,18 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.net.URI;
+import java.net.URL;
+import java.net.HttpURLConnection;
+import java.nio.charset.StandardCharsets;
 
 @Component
 @RequiredArgsConstructor
@@ -23,47 +27,56 @@ public class AppStartupRunner implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
+        crawlIfNeeded();
+    }
+    
+    @Scheduled(cron = "0 0 9 * * MON", zone = "Asia/Seoul")
+    public void crawlWeekly() {
+        crawlIfNeeded();
+    }
+
+    private void crawlIfNeeded() {
         LocalDate today = LocalDate.now();
         LocalDate monday = today.with(DayOfWeek.MONDAY);
         String currentWeekStartDate = monday.format(DateTimeFormatter.ISO_LOCAL_DATE);
         String restaurantId = "MAIN_CAMPUS";
 
         boolean menuExists = !onCampusMenuRepository.findByRestaurantIdAndWeekStartDate(restaurantId, currentWeekStartDate).isEmpty();
+        String enableCrawler = System.getenv("ENABLE_CRAWLER");
 
-        if (!menuExists) {
-            log.info("이번 주 메뉴 데이터가 DB에 없습니다. 초기 데이터 크롤링을 실행합니다.");
+        if ("true".equalsIgnoreCase(enableCrawler) && !menuExists) {
+            log.info("이번 주 메뉴 크롤링을 실행합니다.");
+            callCrawler();
+        }else {
+            log.info("이번주 메뉴 데이터 존재 또는 크롤러 비활성화");
+        }
+    }
 
-            // Python 스크립트 실행
-            try {
-                // 프로젝트 루트 기준 상대 경로
-                String scriptPath = System.getProperty("user.dir") + "/../crawling/crawler.py";
-                ProcessBuilder pb = new ProcessBuilder(
-                        "python",
-                        scriptPath
-                );
-                pb.redirectErrorStream(true);
-                Process process = pb.start();
-
-                // Python 출력 스트림을 소비만 하고 로그에 출력하지 않음 (한글 깨짐 방지)
-                try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
-                    while (reader.readLine() != null) {
-                        // 출력을 읽어서 버퍼를 비우지만 로그에는 출력하지 않음
-                    }
-                }
-
-                int exitCode = process.waitFor();
-                if (exitCode == 0) {
-                    log.info("크롤링 스크립트가 성공적으로 완료되었습니다.");
-                } else {
-                    log.error("크롤링 스크립트 실행 중 오류가 발생했습니다. 종료 코드: {}", exitCode);
-                }
-
-            } catch (Exception e) {
-                log.error("크롤링 스크립트 실행 중 예외 발생", e);
+    private void callCrawler() {
+        try {
+            URI uri = new URI("http://crawler:5000/run");
+            URL url = uri.toURL();
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            con.setRequestMethod("POST");
+            con.setConnectTimeout(5000);
+            con.setReadTimeout(60000);
+            
+            int status = con.getResponseCode();
+            if (status != 200) {
+                log.warn("Crawler 호출 실패, 상태 코드: {}", status);
             }
-
-        } else {
-            log.info("이번 주 메뉴 데이터가 이미 DB에 존재하므로, 초기 크롤링을 건너뜁니다.");
+    
+            try (BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream(), StandardCharsets.UTF_8))) {
+                String inputLine;
+                StringBuilder content = new StringBuilder();
+                while ((inputLine = in.readLine()) != null) {
+                    content.append(inputLine);
+                }
+                log.info("Crawler response: {}", content.toString());
+            }
+            con.disconnect();
+        } catch (Exception e) {
+            log.error("크롤링 스크립트 실행 중 예외 발생", e);
         }
     }
 }
