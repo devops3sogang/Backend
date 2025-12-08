@@ -100,13 +100,15 @@ public class ImageService {
     public Resource loadImage(String filename) {
         try {
             Path filePath = Paths.get(uploadDir).resolve(filename).normalize();
+            log.info("이미지 조회 시도 - uploadDir: {}, filename: {}, fullPath: {}", uploadDir, filename, filePath.toAbsolutePath());
             Resource resource = new UrlResource(filePath.toUri());
 
             if (resource.exists() && resource.isReadable()) {
                 log.info("이미지 로드 성공: {}", filename);
                 return resource;
             } else {
-                log.info("이미지 파일을 찾을 수 없음: {}", filename);
+                log.info("이미지 파일을 찾을 수 없음 - fullPath: {}, exists: {}, readable: {}",
+                    filePath.toAbsolutePath(), resource.exists(), resource.isReadable());
                 throw new IllegalArgumentException("파일을 찾을 수 없습니다: " + filename);
             }
         } catch (MalformedURLException e) {
