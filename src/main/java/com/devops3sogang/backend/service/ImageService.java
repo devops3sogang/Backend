@@ -2,10 +2,13 @@ package com.devops3sogang.backend.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -87,5 +90,28 @@ public class ImageService {
                extension.equals(".jpeg") ||
                extension.equals(".png") ||
                extension.equals(".gif");
+    }
+
+    /**
+     * 이미지 파일 로드
+     * @param filename 파일명
+     * @return Resource
+     */
+    public Resource loadImage(String filename) {
+        try {
+            Path filePath = Paths.get(uploadDir).resolve(filename).normalize();
+            Resource resource = new UrlResource(filePath.toUri());
+
+            if (resource.exists() && resource.isReadable()) {
+                log.info("이미지 로드 성공: {}", filename);
+                return resource;
+            } else {
+                log.warn("이미지 파일을 찾을 수 없음: {}", filename);
+                throw new IllegalArgumentException("파일을 찾을 수 없습니다: " + filename);
+            }
+        } catch (MalformedURLException e) {
+            log.error("이미지 로드 실패 - 잘못된 경로: {}", filename, e);
+            throw new IllegalArgumentException("잘못된 파일 경로입니다: " + filename);
+        }
     }
 }
