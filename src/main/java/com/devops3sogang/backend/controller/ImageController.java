@@ -71,10 +71,10 @@ public class ImageController {
                     .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
                     .body(resource);
         } catch (IllegalArgumentException e) {
-            log.warn("이미지 조회 실패 - 파일 없음: {}", filename);
+            log.info("이미지 조회 실패 - 파일 없음: {}", filename);
             return ResponseEntity.notFound().build();
         } catch (Exception e) {
-            log.error("이미지 조회 실패: {}", filename, e);
+            log.info("이미지 조회 실패: {}", filename, e);
             return ResponseEntity.internalServerError().build();
         }
     }

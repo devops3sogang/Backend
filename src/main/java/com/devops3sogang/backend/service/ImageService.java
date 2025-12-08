@@ -106,11 +106,11 @@ public class ImageService {
                 log.info("이미지 로드 성공: {}", filename);
                 return resource;
             } else {
-                log.warn("이미지 파일을 찾을 수 없음: {}", filename);
+                log.info("이미지 파일을 찾을 수 없음: {}", filename);
                 throw new IllegalArgumentException("파일을 찾을 수 없습니다: " + filename);
             }
         } catch (MalformedURLException e) {
-            log.error("이미지 로드 실패 - 잘못된 경로: {}", filename, e);
+            log.info("이미지 로드 실패 - 잘못된 경로: {}", filename, e);
             throw new IllegalArgumentException("잘못된 파일 경로입니다: " + filename);
         }
     }
