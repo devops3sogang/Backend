@@ -3,6 +3,7 @@ package com.devops3sogang.backend.config;
 import com.devops3sogang.backend.config.jwt.JwtAuthenticationFilter;
 import com.devops3sogang.backend.config.jwt.JwtUtil;
 import com.devops3sogang.backend.config.security.CustomAccessDeniedHandler;
+import com.devops3sogang.backend.config.security.CustomAuthenticationEntryPoint;
 import com.devops3sogang.backend.service.UserDetailsServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -32,6 +33,7 @@ public class SecurityConfig {
         private final JwtUtil jwtUtil;
         private final UserDetailsServiceImpl userDetailsService;
         private final CustomAccessDeniedHandler customAccessDeniedHandler;
+        private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
         @Bean
         public PasswordEncoder passwordEncoder() {
@@ -46,6 +48,7 @@ public class SecurityConfig {
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .exceptionHandling(exception -> exception
+                                .authenticationEntryPoint(customAuthenticationEntryPoint)
                                 .accessDeniedHandler(customAccessDeniedHandler))
                 .authorizeHttpRequests(authorize -> authorize
                         // --- 1. 인증 불필요 경로 (가장 먼저) ---
