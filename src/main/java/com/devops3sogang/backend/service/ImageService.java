@@ -43,7 +43,7 @@ public class ImageService {
 
         String extension = getFileExtension(originalFilename);
         if (!isValidImageExtension(extension)) {
-            throw new IllegalArgumentException("지원하지 않는 이미지 형식입니다. (jpg, jpeg, png, gif만 가능)");
+            throw new IllegalArgumentException("지원하지 않는 이미지 형식입니다. (jpg, jpeg, png, gif, webp만 가능)");
         }
 
         // 파일 크기 검증 (10MB)
@@ -92,7 +92,8 @@ public class ImageService {
         return extension.equals(".jpg") ||
                extension.equals(".jpeg") ||
                extension.equals(".png") ||
-               extension.equals(".gif");
+               extension.equals(".gif") ||
+               extension.equals(".webp");
     }
 
     /**
