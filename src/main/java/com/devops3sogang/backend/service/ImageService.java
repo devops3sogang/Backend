@@ -53,20 +53,23 @@ public class ImageService {
 
         // 업로드 디렉토리 생성
         Path uploadPath = Paths.get(uploadDir);
+        log.info("업로드 디렉토리 - uploadDir: {}, absolutePath: {}", uploadDir, uploadPath.toAbsolutePath());
         if (!Files.exists(uploadPath)) {
             Files.createDirectories(uploadPath);
+            log.info("업로드 디렉토리 생성됨: {}", uploadPath.toAbsolutePath());
         }
 
         // 고유한 파일명 생성
         String filename = UUID.randomUUID().toString() + extension;
         Path filePath = uploadPath.resolve(filename);
+        log.info("저장할 파일 경로: {}", filePath.toAbsolutePath());
 
         // 파일 저장
         Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
         // URL 반환
         String imageUrl = "/uploads/images/" + filename;
-        log.info("이미지 저장 완료: {}", imageUrl);
+        log.info("이미지 저장 완료 - imageUrl: {}, fullPath: {}", imageUrl, filePath.toAbsolutePath());
 
         return imageUrl;
     }
