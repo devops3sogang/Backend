@@ -32,11 +32,6 @@ class RestaurantRepositoryTest {
     private static final double BASE_LAT = 37.5502;
     private static final double BASE_LNG = 126.9410;
 
-    @BeforeEach
-    void setUp() {
-        restaurantRepository.deleteAll();
-    }
-
     // ========== 정상 케이스 14개 ==========
 
     @Test
@@ -447,7 +442,7 @@ class RestaurantRepositoryTest {
 
     // ========== Helper 메서드 ==========
     private Restaurant createRestaurant(String name, double rating, String category,
-                                        double lat, double lng, int reviewCount) {
+            double lat, double lng, int reviewCount) {
         Restaurant restaurant = new Restaurant();
         restaurant.setName(name);
         restaurant.setType("ON_CAMPUS");
