@@ -85,6 +85,7 @@ public class ImageController {
             case "png" -> "image/png";
             case "gif" -> "image/gif";
             case "jpg", "jpeg" -> "image/jpeg";
+            case "webp" -> "image/webp";
             default -> "application/octet-stream";
         };
     }
